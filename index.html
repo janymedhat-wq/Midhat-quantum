@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medhat's Quantum Mechanics Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Placeholder for favicon, since we can't provide external files -->
+    <link rel="icon" type="image/x-icon" href="Cat bf.jfif">
+
+    <!-- Import Google Fonts: Orbitron for headings, Lato for body and descriptions -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Lato:wght@400;700&display=swap">
+    <style>
+        /* Base styles and variables for Light Theme */
+        :root {
+            --primary-font: 'Orbitron', sans-serif;
+            --secondary-font: 'Lato', sans-serif;
+            --text-color: #1a1a1a;
+            --secondary-text-color: #6b7280;
+            --background-color: #ffffff;
+            --accent-color: #000000;
+            --hover-color: #ffffff;
+            --hover-bg-color: #000000;
+            --border-color: #e5e7eb;
+            --card-bg-color: #f3f4f6;
+            --card-hover-bg-color: #e5e7eb;
+            --button-hover-bg-color: #4b5563;
+        }
+
+        /* Dark theme variables */
+        body.dark-theme {
+            --text-color: #e5e7eb;
+            --secondary-text-color: #9ca3af;
+            --background-color: #1a1a1a;
+            --accent-color: #f3f4f6;
+            --hover-color: #000000;
+            --hover-bg-color: #ffffff;
+            --border-color: #4b5563;
+            --card-bg-color: #2d3748;
+            --card-hover-bg-color: #4a5568;
+            --button-hover-bg-color: #f3f4f6;
+        }
+
+        /* Basic reset and typography */
+        body {
+            font-family: var(--secondary-font);
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            cursor: none;
+            overflow-x: hidden;
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        h1, h2, h3 {
+            font-family: var(--primary-font);
+            font-weight: 700;
+            color: var(--accent-color);
+            transition: color 0.3s ease;
+        }
+
+        /* --- Custom Mouse Cursor --- */
+        .cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(107, 114, 128, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease, transform 0.1s ease;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+
+        .cursor.active {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        @media (pointer: coarse) {
+            .cursor {
+                display: none;
+            }
+        }
+
+        /* --- Particle Canvas Background --- */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- General Section Styling --- */
+        .tech-section {
+            padding: 4rem 1rem;
+            text-align: center;
+        }
+
+        .gallery-section {
+            padding: 2rem 1rem 6rem 1rem;
+            text-align: center;
+        }
+
+        .tech-box, .gallery-box {
+            background-color: var(--card-bg-color);
+            border-radius: 1.5rem;
+            padding: 2.5rem 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            position: relative;
+        }
+
+        /* Technology Stack Items */
+        .tech-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            padding: 0.5rem;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-5px) scale(1.05);
+            opacity: 0.9;
+        }
+
+        /* Gallery Project Card Styling */
+        .gallery-item {
+            background-color: var(--background-color);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: auto;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Thumbnail Image Style */
+        .project-thumbnail {
+            width: 100%;
+            height: 200px; /* Fixed height for thumbnails */
+            object-fit: cover; /* Cover the area, cropping if necessary */
+            border-bottom: 1px solid var(--border-color);
+            display: block;
+        }
+
+        /* Fallback for broken thumbnails */
+        .project-thumbnail.broken {
+            background-color: var(--card-hover-bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary-text-color);
+            font-size: 0.8rem;
+            font-family: var(--secondary-font);
+            text-align: center;
+            padding: 1rem;
+            line-height: 1.2;
+        }
+        .project-thumbnail.broken::before {
+            content: "Quantum Simulation Thumbnail Failed to Load";
+        }
+
+        .project-info {
+            padding: 1rem;
+            text-align: left;
+            border-top: 1px solid transparent; /* Keeps design clean */
+        }
+
+        /* Hover style for the 'Visit Site' button */
+        .visit-button:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            background-color: var(--button-hover-bg-color) !important;
+            color: var(--accent-color) !important;
+        }
+        /* End Gallery Styles */
+
+        /* Icon Styling */
+        .tech-icon-container {
+            width: 72px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--background-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+
+        .tech-icon-img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            transition: filter 0.3s, opacity 0.3s;
+        }
+
+        .tech-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Theme Toggle Button Style */
+        #theme-toggle {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 44px;
+            height: 44px;
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        #theme-toggle:hover {
+            background-color: var(--card-hover-bg-color);
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        @media (max-width: 768px) {
+            .tech-section { padding: 2rem 0; }
+            .tech-box, .gallery-box { padding: 1.5rem 0.5rem; }
+            #theme-toggle { top: 0.75rem; right: 0.75rem; }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4f46e5',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="p-4 md:p-8">
+    <!-- Particle Canvas Background - Fixed position, behind content (z-index: -1) -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+
+    <div class="max-w-7xl mx-auto relative">
+        <!-- Theme Toggle Button (Interactive Element for Cursor) -->
+        <button id="theme-toggle" class="interactive-element" title="Toggle Theme: Light or Dark">
+            <!-- Icon is dynamically set by JS based on current theme -->
+            <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Initial state: Moon icon for Dark Theme -->
+                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+            </svg>
+        </button>
+
+        <!-- Header -->
+        <header class="text-center mb-8 md:mb-12 pt-8">
+            <h1 class="text-4xl font-extrabold mb-2">Quantum Mechanics & Simulation Portfolio</h1>
+            <p class="text-xl text-gray-500" style="color: var(--secondary-text-color); font-family: var(--secondary-font);">High-Performance Computing Applications for DFT, QMC, and Molecular Modeling.</p>
+        </header>
+
+        <!-- Core Technologies Section -->
+        <section id="tech" class="tech-section">
+            <div class="tech-box">
+                <div id="tech-grid" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-6 sm:gap-8">
+                    <!-- Technology cards will be generated here by JS -->
+                </div>
+            </div>
+        </section>
+
+        
+        <!-- Simulation Projects Section -->
+        <section id="website-gallery" class="gallery-section">
+            <h2 class="text-3xl font-extrabold mb-6">Quantum Simulation Projects</h2>
+            <p class="text-lg mb-8" style="color: var(--secondary-text-color); font-family: var(--secondary-font);">10 showcases of computational quantum mechanics and accelerated molecular dynamics.</p>
+
+            <div class="gallery-box">
+                <!-- Responsive Grid for Gallery (10 Boxes) -->
+                <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Simulation project cards will be generated here by JS -->
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- JavaScript for the custom cursor, theme logic, logo generation, gallery generation, and particle system -->
+    <script>
+        // --- Utility function for creating placeholder images ---
+        const placeholdLogo = (name) => `https://placehold.co/100x100/374151/ffffff?text=${name.replace(/[^A-Z]/g, '').slice(0, 3)}&font=lato`;
+        const projectThumbnail = (text) => `https://placehold.co/400x200/22223b/ffffff?text=${text}&font=lato`;
+
+        // --- Technology Data (16 Quantum/HPC Logos) ---
+        const technologies = [
+            // Core HPC & Languages
+            { name: "Python", imageURL: "images/python.png", category: 'Language' },
+            { name: "C++", imageURL: "images/c++.png", category: 'Language' },
+            { name: "Fortran", imageURL: "images/fortran.jpg", category: 'Language' },
+            { name: "MPI", imageURL: "images/mpi.jpg", category: 'Parallel' },
+            { name: "CUDA C++", imageURL: "images/cudacp.png", category: 'HPC' },
+
+            // Quantum/DFT Packages/Libraries
+            { name: "PySCF", imageURL: "images/pyscf.png", category: 'DFT' },
+            { name: "Psi4", imageURL: "images/ps14.png", category: 'DFT' },
+            { name: "QE (ESP)", imageURL: "images/qe.jpg", category: 'DFT' }, // Quantum ESPRESSO
+            { name: "NumPy/SciPy", imageURL: "images/nu.png", category: 'Numerical' },
+            { name: "Matplotlib", imageURL: "images/matplot.png", category: 'Visualization' },
+
+            // ML/Infrastructure
+            { name: "PyTorch", imageURL: "images/pyTorch.png", category: 'Deep Learning' },
+            { name: "TensorFlow", imageURL: "images/tensorflow.png", category: 'Deep Learning' },
+            { name: "Docker", imageURL: "images/docker.png", category: 'Infra' },
+            { name: "Git", imageURL: "images/git.png", category: 'Version Control' },
+            { name: "Jupyter", imageURL: "images/juypter.jpg", category: 'Environment' },
+            
+            // Specific HPC
+            { name: "OpenFoam", imageURL: "images/openfoam.png", category: 'Parallel' },
+        ];
+
+        // --- Simulation Project Data (10 Boxes) ---
+        const websiteProjects = [
+            {
+                name: "Quantum Harmonic Oscillator",
+                url: "src/link1.html",
+                description: "Studied the energy eigenstates and time evolution of the one-dimensional quantum harmonic oscillator, visualizing wave packet dynamics.",
+                thumbnailURL: "assets/color.gif"
+            },
+            {
+                name: "1D Interacting Fermions",
+                url: "src/link2.html",
+                description: "A 1D interacting fermion simulation models the behavior of fermionic particles confined to a single spatial dimension where the particles not only obey the Pauli exclusion principle but also experience mutual interactions.",
+                thumbnailURL: "assets/1dfermion.gif"
+            },
+            {
+                name: "1D Non-Interacting Fermions",
+                url: "src/link3.html",
+                description: "A 1D non-interacting fermion simulation models the behavior of fermionic particles confined to a single spatial dimension, assuming the particles do not interact with each other but still obey the Pauli exclusion principle..",
+                thumbnailURL: "assets/nonfermion.gif"
+            },
+            {
+                name: "Double-Slit Quantum Interference Simulation",
+                url: "src/link4.html",
+                description: "Visualized the stationary states (eigenfunctions) and probability densities for a particle confined by two Gaussian potential wells in 3D space.",
+                thumbnailURL: "assets/DoubleSlit.gif"
+            },
+            {
+                name: "3D four gaussian_wells",
+                url: "src/link5.html",
+                description: "Explored the complex nodal patterns and degeneracy arising from four symmetrically placed Gaussian potential wells in a 3D volume.",
+                thumbnailURL: "assets/3rdguassian.gif"
+            },
+            {
+                name: "3rd quantum double slit",
+                url: "src/link6.html",
+                description: "This third-generation double-slit quantum simulation extends the classical double-slit experiment into a fully quantum, interactive framework, allowing for precise modeling of wavefunction dynamics, particle statistics, and environmental effects in one, two, or three dimensions.",
+                thumbnailURL: "assets/3D_Quantum_DoubleSlit.gif"
+            },
+            {
+                name: "Time-Dependent Schrödinger Equation: Guassian wave Packet",
+                url: "src/link7.html",
+                description: "This simulation models the time evolution of a quantum particle using the time-dependent Schrödinger equation (TDSE). The particle is initially represented as a Gaussian wave packet, a localized quantum state with a well-defined position and momentum spread.",
+                thumbnailURL: "assets/TimeDependent_Schrodinger.gif"
+            },
+            {
+                name: "1D Vibrating String Simulation",
+                url: "src/link8.html",
+                description: "A 1D vibrating string simulation models the dynamics of a string fixed at both ends, such as those found in musical instruments, under tension. The string’s motion is governed by the wave equation, which describes how small transverse displacements propagate along the string over time.",
+                thumbnailURL: "assets/VibratingString3D_MPL.gif"
+            },
+            {
+                name: "Bloch Sphere Simulation for a Single Qubit",
+                url: "src/link9.html",
+                description: "An interactive visualization of a single qubit state vector on the Bloch sphere, demonstrating Pauli X, Y, Z gates and Hadamard operation.",
+                thumbnailURL:"assets/BlochSphere_Qubit.gif"
+            },
+            {
+                name: "Quantum Random Walk on a Line",
+                url: "src/link10.html",
+                description: "Implemented a quantum mechanical analogue of the classical random walk, showcasing the characteristic ballistic spreading rate.",
+                thumbnailURL: "assets/quantum_walk.gif"
+            },
+            
+        ];
+
+        // --- Theme and Cursor Logic ---
+        const THEMES = ['light', 'dark']; // Only light and dark modes remaining
+        const body = document.body;
+        const toggleButton = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        // Initialize currentTheme to 'dark' if not set, matching the initial state of the SVG icon
+        let currentTheme = localStorage.getItem('theme') || 'dark';
+
+        // Particle system variables
+        let canvas, ctx, particles = [];
+        let numParticles = 75;
+
+        // Function to determine particle color based on theme
+        function getParticleColor(theme) {
+            if (theme === 'light') return 'rgba(40, 40, 40, 0.4)'; // Dark grey on light background
+            return 'rgba(255, 255, 255, 0.25)'; // Light grey/white on dark background
+        }
+
+        // Function to set the visual theme
+        function applyTheme(theme) {
+            body.className = 'p-4 md:p-8'; // Reset classes, keep padding
+            if (theme === 'dark') { // Only add class if dark
+                body.classList.add(`dark-theme`);
+            }
+            localStorage.setItem('theme', theme);
+            currentTheme = theme;
+            updateThemeIcon(theme);
+
+            // Instantly update particle color on theme change
+            if (particles.length > 0) {
+                const newColor = getParticleColor(theme);
+                particles.forEach(p => {
+                    p.color = newColor;
+                    p.initialColor = newColor; // Update reference color
+                });
+            }
+        }
+
+        // Function to cycle through themes
+        function toggleTheme() {
+            const currentIndex = THEMES.indexOf(currentTheme);
+            const nextIndex = (currentIndex + 1) % THEMES.length;
+            const nextTheme = THEMES[nextIndex];
+            applyTheme(nextTheme);
+        }
+
+        // Function to update the icon based on the current theme
+        function updateThemeIcon(theme) {
+            themeIcon.innerHTML = ''; // Clear existing icon
+            let svgContent = '';
+
+            if (theme === 'dark') {
+                // Moon icon for dark theme
+                svgContent = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>';
+                themeIcon.title = "Toggle Theme: Dark Mode Active";
+            } else {
+                // Sun icon for light theme
+                svgContent = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+                themeIcon.title = "Toggle Theme: Light Mode Active";
+            }
+            themeIcon.innerHTML = svgContent;
+        }
+
+        // --- Particle Class and Functions (The Smooth 3rd Party Effect) ---
+        class Particle {
+            constructor(color) {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = Math.random() * 2 + 1; // Small particles
+                this.color = color;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 0.5, // Slow movement
+                    y: (Math.random() - 0.5) * 0.5
+                };
+                this.initialColor = color;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+
+            update() {
+                // Move particle
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+
+                // Wrap around edges to ensure continuous flow
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    // Re-initialize off-screen
+                    this.x = Math.random() < 0.5 ? -10 : canvas.width + 10;
+                    this.y = Math.random() * canvas.height;
+                }
+
+                this.draw();
+            }
+        }
+
+        function initParticles() {
+            canvas = document.getElementById('particle-canvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+
+            handleResize(); // Set initial canvas size
+
+            particles = [];
+            const color = getParticleColor(currentTheme);
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle(color));
+            }
+            animateParticles();
+        }
+
+        function animateParticles() {
+            if (!ctx) return;
+
+            // Clear the canvas with low opacity to create a subtle trail effect (smoothness)
+            const bgColor = getComputedStyle(document.body).getPropertyValue('background-color');
+            ctx.fillStyle = bgColor;
+            ctx.globalAlpha = 0.04;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1;
+
+            const color = getParticleColor(currentTheme);
+            particles.forEach(particle => {
+                // Update particle color if theme changed
+                if (particle.initialColor !== color) {
+                    particle.color = color;
+                    particle.initialColor = color;
+                }
+                particle.update();
+            });
+
+            requestAnimationFrame(animateParticles);
+        }
+
+        // Handle window resize to keep canvas fullscreen
+        function handleResize() {
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        }
+        window.addEventListener('resize', handleResize);
+
+        // --- UI Element Creation Functions ---
+
+        // Function to create a Technology Stack card
+        function createLogoCard(tech) {
+            const card = document.createElement('div');
+            card.className = 'tech-item interactive-element';
+
+            const iconContainer = document.createElement('div');
+            iconContainer.className = 'tech-icon-container';
+
+            const img = document.createElement('img');
+            img.className = 'tech-icon-img';
+            img.src = tech.imageURL;
+            img.alt = `${tech.name} Logo`;
+
+            // Essential fallback for broken images
+            img.onerror = function() {
+                this.onerror = null;
+                this.src = 'https://placehold.co/100x100/6b7280/ffffff?text=LOGO'; // Fallback
+            };
+
+            iconContainer.appendChild(img);
+
+            const name = document.createElement('p');
+            name.className = 'tech-name';
+            name.textContent = tech.name;
+
+            card.appendChild(iconContainer);
+            card.appendChild(name);
+            return card;
+        }
+
+        // Function to create a Simulation Project card with a thumbnail
+        function createGalleryCard(project) {
+            const card = document.createElement('div');
+            card.className = 'gallery-item interactive-element';
+
+            // ADDED: Title attribute for the browser's native pop-up/tooltip on hover
+            card.title = `${project.name}: ${project.description} (Click to view details)`;
+
+            // 1. Thumbnail Image Area
+            const thumbnailImg = document.createElement('img');
+            thumbnailImg.className = 'project-thumbnail rounded-t-xl';
+            thumbnailImg.src = project.thumbnailURL;
+            thumbnailImg.alt = `Thumbnail for ${project.name}`;
+            thumbnailImg.loading = 'lazy'; // For performance
+
+            // Fallback for broken thumbnail images
+            thumbnailImg.onerror = function() {
+                this.onerror = null; // Prevent infinite loop
+                this.src = ''; // Clear broken image src
+                this.classList.add('broken'); // Add class for styling the fallback text
+            };
+
+            // 2. Project Info and Link
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'project-info';
+
+            const nameLink = document.createElement('a');
+            nameLink.href = project.url;
+            nameLink.target = '_blank';
+            nameLink.className = 'text-xl font-bold tracking-wider hover:underline block mb-2'
+            nameLink.style.fontFamily = 'var(--primary-font)'; /* Uses Orbitron */
+            nameLink.style.color = 'var(--accent-color)';
+            nameLink.textContent = project.name;
+            nameLink.setAttribute('role', 'link');
+
+            const descP = document.createElement('p');
+            descP.className = 'text-sm mb-4';
+            descP.style.color = 'var(--secondary-text-color)';
+            descP.style.fontFamily = 'var(--secondary-font)'; /* Uses Lato */
+            descP.textContent = project.description;
+
+            const visitButton = document.createElement('a');
+            visitButton.href = project.url;
+            visitButton.target = '_blank';
+            // ADDED: visit-button class for custom hover styles
+            visitButton.className = 'visit-button inline-block px-4 py-2 text-xs font-semibold uppercase rounded-full transition-all duration-200'
+            visitButton.style.backgroundColor = 'var(--accent-color)';
+            visitButton.style.color = 'var(--hover-color)';
+            visitButton.textContent = 'View Report \u2192';
+            visitButton.setAttribute('role', 'button');
+
+            infoDiv.appendChild(nameLink);
+            infoDiv.appendChild(descP);
+            infoDiv.appendChild(visitButton);
+
+            card.appendChild(thumbnailImg); // Add thumbnail first
+            card.appendChild(infoDiv);
+
+            return card;
+        }
+
+        // Initialize and setup handlers
+        document.addEventListener('DOMContentLoaded', () => {
+            const cursor = document.querySelector('.cursor');
+            const techGridContainer = document.getElementById('tech-grid');
+            const galleryGridContainer = document.getElementById('gallery-grid');
+
+            // 1. Initialize Theme
+            applyTheme(currentTheme);
+            toggleButton.addEventListener('click', toggleTheme);
+
+            // 2. Particle System Setup
+            initParticles();
+
+            // 3. Logo Generation (Tech Stack - 16 Logos)
+            technologies.slice(0, 16).forEach(tech => {
+                techGridContainer.appendChild(createLogoCard(tech));
+            });
+
+            // 4. Gallery Generation (Simulation Projects - 10 Boxes)
+            websiteProjects.slice(0, 10).forEach(project => {
+                galleryGridContainer.appendChild(createGalleryCard(project));
+            });
+
+            // 5. Custom Cursor Logic
+            document.addEventListener('mousemove', e => {
+                cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+            });
+
+            document.addEventListener('mouseover', e => {
+                const isInteractive = e.target.closest('.interactive-element');
+                if (isInteractive) {
+                    cursor.classList.add('active');
+                } else {
+                    cursor.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
