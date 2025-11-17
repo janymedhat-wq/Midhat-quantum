@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Interference Engine: Double-Well Potential</title>
+    <!-- Importing a new, modern font: Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX typesetting -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* General body styles for a light, minimalist theme */
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #f0f0f0;
+            color: #111;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark theme styles */
+        body.dark-theme {
+            background-color: #111;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .tutorial-content { border-top: 1px solid #444; }
+        body.dark-theme pre { background-color: #222; }
+        body.dark-theme .theme-toggle-button { color: #f0f0f0; border-color: #f0f0f0; }
+        body.dark-theme .theme-toggle-button:hover { background-color: #f0f0f0; color: #111; }
+        body.dark-theme .equation-block { border-left: 3px solid #7cb3ff; background-color: #222; }
+        body.dark-theme figcaption { color: #ccc; }
+        body.dark-theme .main-content h1 { color: #f0f0f0; }
+
+        /* Container for the main content */
+        .container {
+            flex-grow: 1;
+            padding: clamp(30px, 5vw, 50px);
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* --- Main Text Section --- */
+        .main-content h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(3rem, 10vw, 7rem);
+            line-height: 1;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #111;
+        }
+        
+        /* --- Tutorial Section Styles --- */
+        .tutorial-content {
+            margin-top: clamp(50px, 10vw, 100px);
+            padding-top: clamp(25px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(20px, 5vw, 40px);
+        }
+        .tutorial-content p { line-height: 1.6; max-width: 800px; }
+        .tutorial-content h2, .tutorial-content h3, .tutorial-content h4 { font-weight: 700; text-transform: uppercase; }
+        .tutorial-content h2 { font-size: clamp(1.5rem, 4vw, 2rem); letter-spacing: 2px; }
+        .tutorial-content h3 { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 2rem; margin-bottom: 1rem; }
+        
+        pre { background-color: #e5e7eb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; width: 100%; box-sizing: border-box; }
+        pre code { font-size: 0.9rem; }
+
+        /* Style for LaTeX equations */
+        .equation-block {
+            padding: 10px;
+            margin: 1.5rem 0;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        
+        /* Image/Visualization Styling */
+        .viz-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto; /* Centering the visualization */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+        body.dark-theme .viz-container { border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        
+        .viz-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 200px; /* Ensure placeholder visibility */
+        }
+        .viz-container figcaption {
+            padding: 10px;
+            font-size: 0.8rem;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        body.dark-theme .viz-container figcaption {
+            background-color: #282828;
+        }
+        
+        /* --- Footer and Theme Toggle --- */
+        footer {
+            margin-top: auto;
+            padding: 30px clamp(30px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .theme-toggle-button {
+            background: none; border: 1px solid #111; color: #111; padding: 8px 16px;
+            font-family: 'Space Mono', monospace; font-size: 0.9rem; cursor: pointer;
+            transition: background-color 0.3s ease, color: 0.3s ease; border-radius: 5px;
+            display: flex; align-items: center; gap: 8px; text-transform: uppercase;
+        }
+        .theme-toggle-button:hover { background-color: #111; color: #f0f0f0; }
+        .dark-theme .theme-toggle-button { border: 1px solid #f0f0f0; color: #f0f0f0; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container { padding: 30px; text-align: center; align-items: center; }
+            footer { flex-direction: column; justify-content: center; align-items: center; gap: 10px; }
+            .main-content h1 { letter-spacing: 2px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main content area -->
+        <div class="main-content">
+            <h1>QUANTUM INTERFERENCE ENGINE</h1>
+        </div>
+
+        <!-- Tutorial Section (Core Technical Content) -->
+        <main class="tutorial-content">
+            <h2 class="books-title">3D Double-Well Potential: Tunneling and Stationary States</h2>
+            <p class="text-sm text-gray-500">
+                A technical deep dive into the stationary states and probability densities of a single particle confined by two identical potential wells, a critical model for understanding quantum tunneling and coherence.
+            </p>
+
+            <div class="content-section">
+                <p>
+                    The double-well potential is the simplest model that exhibits the quantum phenomenon of **tunneling** and is analogous to the double-slit experiment in momentum space. When the barrier separating the two Gaussian wells is finite, the particle's wave function is not confined to a single well. Instead, the ground state and first excited state become a pair of states: a symmetric state ($n=0$) and an anti-symmetric state ($n=1$), separated by a small **tunneling energy splitting** ($\Delta E$).
+                </p>
+                <div class="viz-container">
+                    <!-- Placeholder image to represent the 3D visualization or GIF -->
+                    <img src="DoubleSlit.gif"
+                          alt="3D visualization of the double-well potential stationary state probability density."
+                          onerror="this.onerror=null; this.src='https://placehold.co/800x400/10B981/FFFFFF?text=3D+Probability+Density+Visualization+of+|%CE%A8|^2';"/>
+                    <figcaption>Conceptual view of the 3D probability density for the ground state ($n=0$), showing high density at the barrier center due to interference.</figcaption>
+                </div>
+
+                <h3>1. The Physics: The Time-Independent Schrödinger Equation</h3>
+                <p>
+                    The stationary states $\Psi_n(x,y,z)$ and their energies $E_n$ are found by solving the time-independent Schrödinger equation: $\hat{H}\Psi_n = E_n\Psi_n$. The Hamiltonian consists of the kinetic energy ($\hat{T}$) and the double Gaussian potential ($\hat{V}$).
+                </p>
+                
+                <h4 id="hamiltonian">The Double-Well Hamiltonian and Potential</h4>
+                <div class="equation-block">
+                    $$\hat{H} = \hat{T} + \hat{V}(x,y,z)$$
+                    $$V(x,y,z) = -V_0 \left(e^{-\frac{r_A^2}{2\sigma^2}} + e^{-\frac{r_B^2}{2\sigma^2}}\right)$$
+                </div>
+                <p>
+                    Where $r_A$ and $r_B$ are the distances from the coordinate $(x,y,z)$ to the center of well A and well B, respectively. $V_0$ is the depth, and $\sigma$ is the width of the wells.
+                </p>
+
+                <h3>2. C++ Kernel Concept: Potential and State Calculation</h3>
+                <p>
+                    In a high-performance computing environment, the potential and the components of the wave function ($\Psi_n$) would be calculated in parallel across a 3D grid, or lattice, using a CUDA kernel or similar parallel framework.
+                </p>
+                
+                <h4 id="cuda-kernel">Kernel for Potential and Probability Density</h4>
+                <pre class="code-snippet"><code class="language-cpp">// kernel_wavefunction.cu: CUDA Kernel for 3D Stationary State (n=0 approximation)
+__device__ double gaussian_well(double x, double y, double z, double center_x, double V0, double sigma) {
+    // Calculates the local potential contribution from one well
+    double r_sq = pow(x - center_x, 2) + pow(y, 2) + pow(z, 2);
+    return -V0 * exp(-r_sq / (2.0 * pow(sigma, 2)));
+}
+
+__global__ void density_kernel(const double* grid_coords, double* density_output, int L, double V0, double sigma, double D) {
+    // L is the total number of grid points (Nx*Ny*Nz)
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < L) {
+        // Map 1D index to 3D coordinates (x, y, z)
+        double x = grid_coords[idx * 3 + 0];
+        double y = grid_coords[idx * 3 + 1];
+        double z = grid_coords[idx * 3 + 2];
+
+        // phi_A and phi_B are localized component wave functions (Gaussian approximation)
+        double phi_A = exp(-((pow(x + D, 2) + pow(y, 2) + pow(z, 2)) / (2.0 * pow(sigma, 2))));
+        double phi_B = exp(-((pow(x - D, 2) + pow(y, 2) + pow(z, 2)) / (2.0 * pow(sigma, 2))));
+
+        // Ground State (n=0): Symmetric superposition Psi_0 = phi_A + phi_B
+        double psi_0 = phi_A + phi_B;
+        
+        // Probability Density |Psi|^2
+        density_output[idx] = pow(psi_0, 2);
+    }
+}
+// End of C++ Kernel Concept.</code></pre>
+
+                <h3>3. Python Analysis: Energy Splitting and Eigenvalues</h3>
+                <p>
+                    For a simpler, one-dimensional version of the double-well, numerical methods in Python, like the Finite Difference Method (FDM) and linear algebra libraries, are used to solve the single-particle system and find the energy eigenvalues $E_n$. The magnitude of the small energy gap ($\Delta E$) between $E_0$ and $E_1$ quantifies the tunneling rate.
+                </p>
+
+                <h4 id="python-analysis">Python Numerical Analysis for 1D Tunneling</h4>
+                <pre class="code-snippet"><code class="language-python"># python_eigen_analysis.py: 1D Double-Well Energy Calculation
+import numpy as np
+import scipy.linalg
+
+# --- System Parameters (1D Analog) ---
+N = 500             # Number of grid points
+X_max = 10.0        # System extent: [-X_max, X_max]
+V0 = 5.0            # Potential depth
+D = 2.0             # Well position offset ( +/- D)
+sigma = 0.5         # Well width
+
+# 1. Setup Grid and Step Size
+x = np.linspace(-X_max, X_max, N)
+dx = x[1] - x[0]
+dx2 = dx**2
+hbar = 1.0          # Set hbar=1, mass=1 for simplicity
+m = 1.0
+
+# 2. Define the Potential V(x)
+def V_double_well(x, V0, D, sigma):
+    # Two Gaussian wells centered at -D and +D
+    return -V0 * (np.exp(-(x + D)**2 / (2 * sigma**2)) + np.exp(-(x - D)**2 / (2 * sigma**2)))
+
+V = V_double_well(x, V0, D, sigma)
+
+# 3. Construct the Hamiltonian Matrix H (using Finite Difference Method for kinetic term)
+# H = T + V
+# The kinetic term T is proportional to the second derivative operator (tridiagonal)
+# T_ii = hbar^2 / (m * dx^2)
+# T_i,i+1 = T_i+1,i = -hbar^2 / (2 * m * dx^2)
+T_diag = hbar**2 / (m * dx2)
+T_off_diag = -hbar**2 / (2 * m * dx2)
+
+# Build the kinetic matrix T
+T = (T_diag * np.eye(N)) + (T_off_diag * (np.diag(np.ones(N - 1), 1) + np.diag(np.ones(N - 1), -1)))
+
+# Add the potential V to the diagonal
+H = T + np.diag(V)
+
+# 4. Solve the Eigenvalue Problem
+# We find the eigenvalues (energies E_n) and eigenvectors (wave functions Psi_n)
+eigenvalues, eigenvectors = scipy.linalg.eigh(H)
+
+# 5. Analyze Results for Tunneling Splitting
+E0 = eigenvalues[0] # Ground state energy
+E1 = eigenvalues[1] # First excited state energy
+tunneling_splitting = E1 - E0
+
+print("-" * 35)
+print(f"--- 1D Double-Well Analysis ---")
+print(f"Ground State Energy (E0): {E0: .4f}")
+print(f"First Excited Energy (E1): {E1: .4f}")
+print(f"Tunneling Energy Splitting (Delta E): {tunneling_splitting: .4e}")
+print("-" * 35)
+# This small, non-zero splitting confirms quantum tunneling between the wells.
+# The eigenvectors[:, 0] and eigenvectors[:, 1] represent the Psi_0 and Psi_1 states.
+# End of Python Numerical Analysis.</code></pre>
+            </div>
+        </main>
+    </div>
+
+    <!-- The Footer remains outside the container to span full width -->
+    <footer>
+        <p>© 2025 Quantum Interference Engine Technical Document.</p>
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle" class="theme-toggle-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span id="theme-text">Dark Mode</span>
+        </button>
+    </footer>
+
+    <!-- JavaScript for Theme Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const toggleButton = document.getElementById('theme-toggle');
+
+            // --- Theme Toggle Logic ---
+            const initialTheme = localStorage.getItem('theme') || 'light';
+            const isDarkMode = initialTheme === 'dark';
+
+            const updateThemeUI = (isDark) => {
+                // SVG for sun (light mode icon)
+                const svgSun = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+                // SVG for moon (dark mode icon)
+                const svgMoon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+                if (isDark) {
+                    body.classList.add('dark-theme');
+                    toggleButton.innerHTML = `${svgMoon}<span>Light Mode</span>`;
+                } else {
+                    body.classList.remove('dark-theme');
+                    toggleButton.innerHTML = `${svgSun}<span>Dark Mode</span>`;
+                }
+            };
+
+            updateThemeUI(isDarkMode);
+
+            toggleButton.addEventListener('click', () => {
+                const isDark = body.classList.toggle('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeUI(isDark);
+            });
+        });
+    </script>
+</body>
+</html>

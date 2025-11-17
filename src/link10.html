@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Algorithms: Quantum Random Walk</title>
+
+    <!-- Importing a new, modern font: Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- MathJax for LaTeX typesetting -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* General body styles for a light, minimalist theme */
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #f0f0f0;
+            color: #111;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark theme styles */
+        body.dark-theme {
+            background-color: #111;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .tutorial-content { border-top: 1px solid #444; }
+        body.dark-theme pre { background-color: #222; }
+        body.dark-theme .theme-toggle-button { color: #f0f0f0; border-color: #f0f0f0; }
+        body.dark-theme .theme-toggle-button:hover { background-color: #f0f0f0; color: #111; }
+        body.dark-theme .equation-block { border-left: 3px solid #7cb3ff; background-color: #222; }
+        body.dark-theme figcaption { color: #ccc; }
+        body.dark-theme .main-content h1 { color: #f0f0f0; }
+
+        /* Container for the main content */
+        .container {
+            flex-grow: 1;
+            padding: clamp(30px, 5vw, 50px);
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* --- Main Text Section --- */
+        .main-content h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(3rem, 10vw, 7rem);
+            line-height: 1;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #111;
+        }
+
+        /* --- Tutorial Section Styles --- */
+        .tutorial-content {
+            margin-top: clamp(50px, 10vw, 100px);
+            padding-top: clamp(25px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(20px, 5vw, 40px);
+        }
+        .tutorial-content p { line-height: 1.6; max-width: 800px; }
+        .tutorial-content h2, .tutorial-content h3, .tutorial-content h4 { font-weight: 700; text-transform: uppercase; }
+        .tutorial-content h2 { font-size: clamp(1.5rem, 4vw, 2rem); letter-spacing: 2px; }
+        .tutorial-content h3 { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 2rem; margin-bottom: 1rem; }
+
+        pre { background-color: #e5e7eb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; width: 100%; box-sizing: border-box; }
+        pre code { font-size: 0.9rem; }
+
+        /* Style for LaTeX equations */
+        .equation-block {
+            padding: 10px;
+            margin: 1.5rem 0;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+        }
+
+        /* Image/Visualization Styling */
+        .viz-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto; /* Centering the visualization */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+        body.dark-theme .viz-container { border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+
+        .viz-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 200px; /* Ensure placeholder visibility */
+        }
+        .viz-container figcaption {
+            padding: 10px;
+            font-size: 0.8rem;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        body.dark-theme .viz-container figcaption {
+            background-color: #282828;
+        }
+
+        /* --- Footer and Theme Toggle --- */
+        footer {
+            margin-top: auto;
+            padding: 30px clamp(30px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .theme-toggle-button {
+            background: none; border: 1px solid #111; color: #111; padding: 8px 16px;
+            font-family: 'Space Mono', monospace; font-size: 0.9rem; cursor: pointer;
+            transition: background-color 0.3s ease, color: 0.3s ease; border-radius: 5px;
+            display: flex; align-items: center; gap: 8px; text-transform: uppercase;
+        }
+        .theme-toggle-button:hover { background-color: #111; color: #f0f0f0; }
+        .dark-theme .theme-toggle-button { border: 1px solid #f0f0f0; color: #f0f0f0; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container { padding: 30px; text-align: center; align-items: center; }
+            footer { flex-direction: column; justify-content: center; align-items: center; gap: 10px; }
+            .main-content h1 { letter-spacing: 2px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main content area -->
+        <div class="main-content">
+            <h1>QUANTUM ALGORITHMS HPC</h1>
+        </div>
+
+        <!-- Tutorial Section (Core Technical Content) -->
+        <main class="tutorial-content">
+            <h2 class="books-title">Quantum Random Walk on a Line: Ballistic Spreading</h2>
+            <p class="text-sm text-gray-500">
+                A comparison of the classical and quantum walk dynamics, focusing on the significantly enhanced spread of the quantum mechanical analogue.
+            </p>
+
+            <div class="content-section">
+                <p>
+                    The **Quantum Random Walk (QRW)** is the quantum mechanical counterpart to the classical random walk. The key difference lies in the replacement of classical probability distributions with **quantum superposition** and **interference**. The walk's state is defined on a Hilbert space composed of position and a 'coin' degree of freedom.
+                </p>
+
+                <h4 id="spread-rate">Spread Rate: Quantum vs. Classical</h4>
+                <p>
+                    After $t$ steps, the standard deviation $\sigma$ (the spatial spread) of the distribution follows distinct laws:
+                    <ul>
+                        <li>**Classical Random Walk (CRW):** Diffusive spread, $\sigma \propto \sqrt{t}$.</li>
+                        <li>**Quantum Random Walk (QRW):** Ballistic spread, $\sigma \propto t$.</li>
+                    </ul>
+                    This quadratic speedup is what makes QRWs a powerful tool for developing faster quantum search algorithms.
+                </p>
+
+                <div class="viz-container">
+                    <img src="quantum_walk.gif"
+                         alt="Graph comparing the spread of classical and quantum random walks over time."
+                         onerror="this.onerror=null; this.src='https://placehold.co/800x400/800080/FFF?text=Quantum+Walk+Spread+Comparison+Placeholder';"/>
+                    <figcaption>The probability distribution of the QRW exhibits two peaks moving away from the origin, characteristic of ballistic spreading.</figcaption>
+                </div>
+
+                <h3>1. The Two-Part Operator</h3>
+                <p>
+                    Each step of the discrete-time QRW on a line is governed by a unitary operator, $\hat{U}$, which is a sequential application of a Coin Operator ($\hat{C}$) and a Shift Operator ($\hat{S}$).
+                </p>
+
+                <h4 id="qrw-operator">The Full Quantum Walk Operator $\hat{U}$</h4>
+                <div class="equation-block">
+                    $$\hat{U} = \hat{S} \cdot (\hat{C} \otimes \hat{I})$$
+                </div>
+                <p>
+                    where $\hat{I}$ is the identity operator acting on the position space, ensuring the coin flip happens independently of location.
+                </p>
+
+                <h3>2. The Shift Operator $\hat{S}$ and Coin Operator $\hat{C}$</h3>
+                <p>
+                    The **Shift Operator** moves the walker one step left or right, depending on the coin state (up $|\uparrow\rangle$ or down $|\downarrow\rangle$). The most common **Coin Operator** is the Hadamard gate, $\hat{H}$.
+                </p>
+
+                <h4 id="shift-coin-ops">Hadamard Coin $\hat{C}$ and Conditional Shift $\hat{S}$</h4>
+                <div class="equation-block">
+                    $$\hat{C} = \frac{1}{\sqrt{2}}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$$
+                </div>
+                <p>The conditional shift operator $\hat{S}$ acts on the position basis $|x\rangle$ as:</p>
+                <div class="equation-block">
+                    $$\hat{S} (|\uparrow\rangle \otimes |x\rangle) = |\uparrow\rangle \otimes |x+1\rangle \\ \hat{S} (|\downarrow\rangle \otimes |x\rangle) = |\downarrow\rangle \otimes |x-1\rangle$$
+                </div>
+
+                <h3>3. Iteration and Probability Calculation</h3>
+                <p>
+                    The evolution is performed by repeated application of the unitary operator: $|\Psi(t)\rangle = \hat{U}^t |\Psi(0)\rangle$. The final distribution is found by summing the probabilities of the two coin states at each position $x$.
+                </p>
+
+                <h4 id="python-iteration">Python Implementation: QRW Iteration</h4>
+                <pre class="code-snippet"><code class="language-python"># qrw_simulation.py: Quantum Random Walk Iteration
+import numpy as np
+
+# --- System Parameters ---
+T_STEPS = 50        # Number of walk steps
+N_POSITIONS = 2 * T_STEPS + 1 # Total positions to track (e.g., -50 to 50)
+CENTER = T_STEPS
+PSI = np.zeros((N_POSITIONS, 2), dtype=complex) # State vector: [position, coin state]
+
+# Initial state: Position 0, Equal superposition coin state (|0> + |1>)/sqrt(2)
+PSI[CENTER, 0] = 1 / np.sqrt(2) # Coin Up (a_x)
+PSI[CENTER, 1] = 1 / np.sqrt(2) # Coin Down (b_x)
+
+# Hadamard Coin Operator
+H = (1 / np.sqrt(2)) * np.array([[1, 1], [1, -1]])
+
+def quantum_walk_step(psi_t):
+    """Performs one step of the Quantum Random Walk."""
+    psi_next = np.zeros_like(psi_t)
+    N = psi_t.shape[0]
+
+    # 1. Apply Coin Operator (Local operation at each position x)
+    psi_coin = np.dot(psi_t, H)
+
+    # 2. Apply Conditional Shift Operator (Moves state to new positions)
+    for x in range(N):
+        # a_x (coin up) moves right (x -> x+1)
+        if x + 1 < N:
+            psi_next[x + 1, 0] += psi_coin[x, 0]
+        # b_x (coin down) moves left (x -> x-1)
+        if x - 1 >= 0:
+            psi_next[x - 1, 1] += psi_coin[x, 1]
+            
+    return psi_next
+
+# Run the simulation for T_STEPS
+current_psi = PSI
+for t in range(T_STEPS):
+    current_psi = quantum_walk_step(current_psi)
+
+# Probability distribution P(x) = |a_x|^2 + |b_x|^2
+probability_dist = np.sum(np.abs(current_psi)**2, axis=1)
+
+print(f"QRW simulation complete after {T_STEPS} steps.")
+print(f"Max probability position: {np.argmax(probability_dist) - CENTER}")
+
+# End of Python QRW Core.</code></pre>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer and Theme Toggle -->
+    <footer>
+        <p>© 2025 Quantum Algorithms HPC Technical Document.</p>
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle" class="theme-toggle-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span id="theme-text">Dark Mode</span>
+        </button>
+    </footer>
+
+    <!-- JavaScript for Theme Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const toggleButton = document.getElementById('theme-toggle');
+
+            // --- Theme Toggle Logic ---
+            const initialTheme = localStorage.getItem('theme') || 'light';
+            const isDarkMode = initialTheme === 'dark';
+
+            const updateThemeUI = (isDark) => {
+                // Sun Icon (for light mode button text)
+                const svgSun = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+                // Moon Icon (for dark mode button text)
+                const svgMoon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+                if (isDark) {
+                    body.classList.add('dark-theme');
+                    toggleButton.innerHTML = `${svgMoon}<span>Light Mode</span>`;
+                } else {
+                    body.classList.remove('dark-theme');
+                    toggleButton.innerHTML = `${svgSun}<span>Dark Mode</span>`;
+                }
+            };
+
+            updateThemeUI(isDarkMode);
+
+            toggleButton.addEventListener('click', () => {
+                const isDark = body.classList.toggle('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeUI(isDark);
+            });
+        });
+    </script>
+</body>
+</html>

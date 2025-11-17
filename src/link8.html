@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classical Dynamics: 1D Wave Equation</title>
+
+    <!-- Importing a new, modern font: Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- MathJax for LaTeX typesetting -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* General body styles for a light, minimalist theme */
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #f0f0f0;
+            color: #111;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark theme styles */
+        body.dark-theme {
+            background-color: #111;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .tutorial-content { border-top: 1px solid #444; }
+        body.dark-theme pre { background-color: #222; }
+        body.dark-theme .theme-toggle-button { color: #f0f0f0; border-color: #f0f0f0; }
+        body.dark-theme .theme-toggle-button:hover { background-color: #f0f0f0; color: #111; }
+        body.dark-theme .equation-block { border-left: 3px solid #7cb3ff; background-color: #222; }
+        body.dark-theme figcaption { color: #ccc; }
+        body.dark-theme .main-content h1 { color: #f0f0f0; }
+
+        /* Container for the main content */
+        .container {
+            flex-grow: 1;
+            padding: clamp(30px, 5vw, 50px);
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* --- Main Text Section --- */
+        .main-content h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(3rem, 10vw, 7rem);
+            line-height: 1;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #111;
+        }
+
+        /* --- Tutorial Section Styles --- */
+        .tutorial-content {
+            margin-top: clamp(50px, 10vw, 100px);
+            padding-top: clamp(25px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(20px, 5vw, 40px);
+        }
+        .tutorial-content p { line-height: 1.6; max-width: 800px; }
+        .tutorial-content h2, .tutorial-content h3, .tutorial-content h4 { font-weight: 700; text-transform: uppercase; }
+        .tutorial-content h2 { font-size: clamp(1.5rem, 4vw, 2rem); letter-spacing: 2px; }
+        .tutorial-content h3 { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 2rem; margin-bottom: 1rem; }
+
+        pre { background-color: #e5e7eb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; width: 100%; box-sizing: border-box; }
+        pre code { font-size: 0.9rem; }
+
+        /* Style for LaTeX equations */
+        .equation-block {
+            padding: 10px;
+            margin: 1.5rem 0;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+        }
+
+        /* Image/Visualization Styling */
+        .viz-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto; /* Centering the visualization */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+        body.dark-theme .viz-container { border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+
+        .viz-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 200px; /* Ensure placeholder visibility */
+        }
+        .viz-container figcaption {
+            padding: 10px;
+            font-size: 0.8rem;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        body.dark-theme .viz-container figcaption {
+            background-color: #282828;
+        }
+
+        /* --- Footer and Theme Toggle --- */
+        footer {
+            margin-top: auto;
+            padding: 30px clamp(30px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .theme-toggle-button {
+            background: none; border: 1px solid #111; color: #111; padding: 8px 16px;
+            font-family: 'Space Mono', monospace; font-size: 0.9rem; cursor: pointer;
+            transition: background-color 0.3s ease, color: 0.3s ease; border-radius: 5px;
+            display: flex; align-items: center; gap: 8px; text-transform: uppercase;
+        }
+        .theme-toggle-button:hover { background-color: #111; color: #f0f0f0; }
+        .dark-theme .theme-toggle-button { border: 1px solid #f0f0f0; color: #f0f0f0; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container { padding: 30px; text-align: center; align-items: center; }
+            footer { flex-direction: column; justify-content: center; align-items: center; gap: 10px; }
+            .main-content h1 { letter-spacing: 2px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main content area -->
+        <div class="main-content">
+            <h1>WAVE EQUATION HPC</h1>
+        </div>
+
+        <!-- Tutorial Section (Core Technical Content) -->
+        <main class="tutorial-content">
+            <h2 class="books-title">1D Vibrating String Simulation: Finite Difference Method</h2>
+            <p class="text-sm text-gray-500">
+                A guide to modeling the classical motion of a perfectly elastic string, fixed at both ends, using a high-fidelity numerical scheme.
+            </p>
+
+            <div class="content-section">
+                <p>
+                    The motion of a small transverse displacement $u(x, t)$ along an ideal, tensioned string is governed by the **1D Wave Equation**. This hyperbolic partial differential equation is the foundation for understanding wave propagation in classical physics and acoustics.
+                </p>
+
+                <h4 id="wave-equation">The 1D Wave Equation</h4>
+                <div class="equation-block">
+                    $$\frac{\partial^2 u}{\partial t^2} = c^2 \frac{\partial^2 u}{\partial x^2}$$
+                </div>
+
+                <p>
+                    Where $c$ is the wave speed, determined by the string's properties: $c = \sqrt{T/\rho}$, with $T$ being the tension and $\rho$ being the linear mass density. For the fixed-end simulation, the boundary conditions are: $u(0, t) = 0$ and $u(L, t) = 0$.
+                </p>
+
+                <div class="viz-container">
+                    <img src="VibratingString3D_MPL.gif"
+                         alt="Animation of a vibrating string showing the first three harmonic modes."
+                         onerror="this.onerror=null; this.src='https://placehold.co/800x400/6A5ACD/FFF?text=Vibrating+String+Modes+Placeholder';"/>
+                    <figcaption>Visualization of the standing wave patterns (normal modes) that characterize the string's motion.</figcaption>
+                </div>
+
+                <h3>1. Numerical Method: FDTD Scheme</h3>
+                <p>
+                    To solve the wave equation numerically, the **Finite Difference Time Domain (FDTD)** method is commonly used. This involves discretizing both the spatial domain ($x$) and the temporal domain ($t$) and approximating the derivatives with finite difference quotients.
+                </p>
+
+                <h4 id="fdtd">The Central Difference Approximation</h4>
+                <p>
+                    Using a central difference scheme for both time and space, we arrive at the explicit update formula for the displacement $u$ at the next time step $n+1$:
+                </p>
+                <div class="equation-block">
+                    $$\frac{u_{i}^{n+1} - 2u_{i}^{n} + u_{i}^{n-1}}{(\Delta t)^2} = c^2 \frac{u_{i+1}^{n} - 2u_{i}^{n} + u_{i-1}^{n}}{(\Delta x)^2}$$
+                </div>
+                <p>
+                    Rearranging this equation yields the core update step:
+                </p>
+                <div class="equation-block">
+                    $$u_{i}^{n+1} = 2u_{i}^{n} - u_{i}^{n-1} + \lambda^2 (u_{i+1}^{n} - 2u_{i}^{n} + u_{i-1}^{n})$$
+                </div>
+                <p>
+                    where $\lambda = c \Delta t / \Delta x$ is the **Courant-Friedrichs-Lewy (CFL)** number. For numerical stability, we must ensure $\lambda \le 1$.
+                </p>
+
+                <h3>2. Parallel Implementation (C++ / OpenMP)</h3>
+                <p>
+                    The FDTD scheme is inherently local: the value of $u$ at a point $i$ depends only on its immediate neighbors ($i-1, i, i+1$) from the previous time step. This locality makes the method highly suitable for parallelization, typically using OpenMP for shared memory or MPI for distributed memory on large clusters.
+                </p>
+
+                <h4 id="cpp-kernel">Conceptual C++ Kernel for FDTD Update</h4>
+                <pre class="code-snippet"><code class="language-cpp">// string_fdtd.cpp: Conceptual FDTD time-stepping
+#include <vector>
+#include <cmath>
+#include <iostream>
+
+// Constants and Parameters
+const double C_SQUARED = 1.0; // c^2 = T/rho
+const double DX = 0.01;      // Spatial step size
+const double DT = 0.005;     // Time step size
+const double LAMBDA_SQ = C_SQUARED * (DT * DT) / (DX * DX); // CFL condition must hold (lambda <= 1)
+
+void update_string_step(
+    const std::vector<double>& u_current, // u(t)
+    const std::vector<double>& u_previous, // u(t - dt)
+    std::vector<double>& u_next)          // u(t + dt)
+{
+    int N = u_current.size();
+
+    // The boundary points (index 0 and N-1) are fixed (u=0)
+    u_next[0] = 0.0;
+    u_next[N - 1] = 0.0;
+
+    // OpenMP/CUDA Parallel region typically starts here.
+    // Each thread calculates u_next[i] independently.
+    for (int i = 1; i < N - 1; ++i) {
+        // Core FDTD Update: u_i^(n+1) = 2*u_i^n - u_i^(n-1) + lambda^2 * (u_{i+1}^n - 2*u_i^n + u_{i-1}^n)
+        u_next[i] = 
+            2.0 * u_current[i] - u_previous[i] + 
+            LAMBDA_SQ * (u_current[i + 1] - 2.0 * u_current[i] + u_current[i - 1]);
+    }
+}
+
+// End of Conceptual FDTD Core.</code></pre>
+
+                <h3>3. Initial Conditions: Plucked String</h3>
+                <p>
+                    A common starting configuration is the "plucked string" profile, where the string is pulled to a triangular shape and released from rest.
+                </p>
+                <h4 id="init-pluck">Initial Displacement $u(x, 0)$ and Velocity $\partial u / \partial t |_{t=0}$</h4>
+                <p>
+                    The initial displacement $u(x, 0)$ is often defined piecewise, while the initial velocity $\partial u / \partial t |_{t=0}$ is zero, which is essential for initiating the motion using the two-step FDTD method.
+                </p>
+                <pre class="code-snippet"><code class="language-python"># string_initial_condition.py: Plucked string initialization
+import numpy as np
+
+# --- System Parameters ---
+L = 1.0             # String length
+A = 0.05            # Maximum initial amplitude
+P = 0.25            # Plucking point (as fraction of L, here at L/4)
+N = 1000            # Number of points
+
+# Create the spatial grid
+x_grid = np.linspace(0.0, L, N)
+pluck_x = P * L
+
+def plucked_string_initial(x, L, A, pluck_x):
+    """Defines the initial triangular displacement profile."""
+    u0 = np.zeros_like(x)
+    for i, xi in enumerate(x):
+        if xi <= pluck_x:
+            # Linear rise from 0 to A
+            u0[i] = (A / pluck_x) * xi
+        else:
+            # Linear drop from A to 0
+            u0[i] = (A / (L - pluck_x)) * (L - xi)
+    return u0
+
+# Initial displacement u(x, 0)
+u_t0 = plucked_string_initial(x_grid, L, A, pluck_x)
+# Initial velocity du/dt(x, 0) is zero, so u(t=dt) is set using a special case of FDTD
+u_t1 = u_t0.copy() 
+
+print(f"Initialized plucked string (L={L}, Max Amp={A}) at P={P}L.")
+print("Two state vectors (u_t0 and u_t1) are required to start the FDTD loop.")
+# End of Python Initialization.</code></pre>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer and Theme Toggle -->
+    <footer>
+        <p>© 2025 Classical Dynamics HPC Technical Document.</p>
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle" class="theme-toggle-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span id="theme-text">Dark Mode</span>
+        </button>
+    </footer>
+
+    <!-- JavaScript for Theme Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const toggleButton = document.getElementById('theme-toggle');
+
+            // --- Theme Toggle Logic ---
+            const initialTheme = localStorage.getItem('theme') || 'light';
+            const isDarkMode = initialTheme === 'dark';
+
+            const updateThemeUI = (isDark) => {
+                // Sun Icon (for light mode button text)
+                const svgSun = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+                // Moon Icon (for dark mode button text)
+                const svgMoon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+                if (isDark) {
+                    body.classList.add('dark-theme');
+                    toggleButton.innerHTML = `${svgMoon}<span>Light Mode</span>`;
+                } else {
+                    body.classList.remove('dark-theme');
+                    toggleButton.innerHTML = `${svgSun}<span>Dark Mode</span>`;
+                }
+            };
+
+            updateThemeUI(isDarkMode);
+
+            toggleButton.addEventListener('click', () => {
+                const isDark = body.classList.toggle('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeUI(isDark);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Interference Engine: Four-Well Potential</title>
+    <!-- Importing a new, modern font: Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX typesetting -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* General body styles for a light, minimalist theme */
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #f0f0f0;
+            color: #111;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark theme styles */
+        body.dark-theme {
+            background-color: #111;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .tutorial-content { border-top: 1px solid #444; }
+        body.dark-theme pre { background-color: #222; }
+        body.dark-theme .theme-toggle-button { color: #f0f0f0; border-color: #f0f0f0; }
+        body.dark-theme .theme-toggle-button:hover { background-color: #f0f0f0; color: #111; }
+        body.dark-theme .equation-block { border-left: 3px solid #7cb3ff; background-color: #222; }
+        body.dark-theme figcaption { color: #ccc; }
+        body.dark-theme .main-content h1 { color: #f0f0f0; }
+
+        /* Container for the main content */
+        .container {
+            flex-grow: 1;
+            padding: clamp(30px, 5vw, 50px);
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* --- Main Text Section --- */
+        .main-content h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(3rem, 10vw, 7rem);
+            line-height: 1;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #111;
+        }
+        
+        /* --- Tutorial Section Styles --- */
+        .tutorial-content {
+            margin-top: clamp(50px, 10vw, 100px);
+            padding-top: clamp(25px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(20px, 5vw, 40px);
+        }
+        .tutorial-content p { line-height: 1.6; max-width: 800px; }
+        .tutorial-content h2, .tutorial-content h3, .tutorial-content h4 { font-weight: 700; text-transform: uppercase; }
+        .tutorial-content h2 { font-size: clamp(1.5rem, 4vw, 2rem); letter-spacing: 2px; }
+        .tutorial-content h3 { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 2rem; margin-bottom: 1rem; }
+        
+        pre { background-color: #e5e7eb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; width: 100%; box-sizing: border-box; }
+        pre code { font-size: 0.9rem; }
+
+        /* Style for LaTeX equations */
+        .equation-block {
+            padding: 10px;
+            margin: 1.5rem 0;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        
+        /* Image/Visualization Styling */
+        .viz-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto; /* Centering the visualization */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+        body.dark-theme .viz-container { border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        
+        .viz-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 200px; /* Ensure placeholder visibility */
+        }
+        .viz-container figcaption {
+            padding: 10px;
+            font-size: 0.8rem;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        body.dark-theme .viz-container figcaption {
+            background-color: #282828;
+        }
+        
+        /* --- Footer and Theme Toggle --- */
+        footer {
+            margin-top: auto;
+            padding: 30px clamp(30px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .theme-toggle-button {
+            background: none; border: 1px solid #111; color: #111; padding: 8px 16px;
+            font-family: 'Space Mono', monospace; font-size: 0.9rem; cursor: pointer;
+            transition: background-color 0.3s ease, color: 0.3s ease; border-radius: 5px;
+            display: flex; align-items: center; gap: 8px; text-transform: uppercase;
+        }
+        .theme-toggle-button:hover { background-color: #111; color: #f0f0f0; }
+        .dark-theme .theme-toggle-button { border: 1px solid #f0f0f0; color: #f0f0f0; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container { padding: 30px; text-align: center; align-items: center; }
+            footer { flex-direction: column; justify-content: center; align-items: center; gap: 10px; }
+            .main-content h1 { letter-spacing: 2px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main content area -->
+        <div class="main-content">
+            <h1>QUANTUM INTERFERENCE ENGINE</h1>
+        </div>
+
+        <!-- Tutorial Section (Core Technical Content) -->
+        <main class="tutorial-content">
+            <h2 class="books-title">3D Four-Well Potential: Degeneracy and Nodal Surfaces</h2>
+            <p class="text-sm text-gray-500">
+                A study of the **complex nodal patterns** and near-perfect energy **degeneracy** emerging from the high rotational and mirror symmetry of four identical Gaussian potential wells in a 3D simulation volume.
+            </p>
+
+            <div class="content-section">
+                <p>
+                    When four identical wells are arranged symmetrically (e.g., in a square formation on the $xy$-plane), the low-lying energy levels split into a cluster of states. Due to the high **$C_{4v}$ point group symmetry**, the first four excited states are expected to form one non-degenerate state (the ground state) and a cluster of three near-degenerate states (a symmetric state and two anti-symmetric pairs) when the tunneling barrier is small.
+                </p>
+                <div class="viz-container">
+                    <!-- Placeholder image to represent the 3D visualization or GIF -->
+                    <img src="3rdguassian.gif"
+                          alt="3D visualization of the second excited state's nodal surface in the four-well potential."
+                          onerror="this.onerror=null; this.src='https://placehold.co/800x400/8B5CF6/FFFFFF?text=3D+Nodal+Surfaces+of+The+Second+Excited+State';"/>
+                    <figcaption>Conceptual view showing the nodal surfaces ($\Psi=0$) of a higher energy eigenfunction. Notice the complex symmetry, often involving planar and curved nodes.</figcaption>
+                </div>
+
+                <h3>1. The Physics: The Symmetric Four-Well Potential</h3>
+                <p>
+                    We solve the time-independent Schrödinger equation $\hat{H}\Psi_n = E_n\Psi_n$. The total potential $\hat{V}$ is the sum of four identical Gaussian potential contributions centered at the four corners of a square (assuming a fixed $z=0$ plane, but extended in 3D).
+                </p>
+                
+                <h4 id="hamiltonian">The Four-Well Hamiltonian and Potential</h4>
+                <div class="equation-block">
+                    $$\hat{H} = -\frac{\hbar^2}{2m} \nabla^2 + \hat{V}(x,y,z)$$
+                    $$V(x,y,z) = -V_0 \sum_{i=1}^{4} e^{-\frac{r_i^2}{2\sigma^2}}$$
+                </div>
+                <p>
+                    Let the four well centers in the $xy$-plane be $(\pm D, \pm D, 0)$. The distance $r_i$ is calculated from the point $(x,y,z)$ to the center of well $i$.
+                </p>
+
+                <h3>2. C++ Kernel Concept: Potential and Basis Set Construction</h3>
+                <p>
+                    For solving the 3D TISE, we typically use a computational method like the Finite Difference Method (FDM) on a massive 3D grid, or, for efficiency, use a basis expansion method. A CUDA kernel would be indispensable for calculating the potential matrix elements or the FDM Hamiltonian on the large grid.
+                </p>
+                
+                <h4 id="cuda-kernel">Kernel for 3D Potential and Probability Density</h4>
+                <pre class="code-snippet"><code class="language-cpp">// kernel_4well_potential.cu: CUDA Kernel for 3D Four-Well Potential Calculation
+__device__ double gaussian_well(double x, double y, double z, double center_x, double center_y, double V0, double sigma) {
+    // Calculates the local potential contribution from one well
+    double r_sq = pow(x - center_x, 2) + pow(y - center_y, 2) + pow(z, 2);
+    return -V0 * exp(-r_sq / (2.0 * pow(sigma, 2)));
+}
+
+__global__ void potential_kernel(const double* grid_coords, double* potential_output, int N_grid, double V0, double sigma, double D) {
+    // N_grid is the total number of grid points (Nx*Ny*Nz)
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < N_grid) {
+        double x = grid_coords[idx * 3 + 0];
+        double y = grid_coords[idx * 3 + 1];
+        double z = grid_coords[idx * 3 + 2];
+
+        // Centers of the four wells in the xy-plane
+        double V_total = 0.0;
+        V_total += gaussian_well(x, y, z, D, D, V0, sigma);    // Well 1 (+D, +D)
+        V_total += gaussian_well(x, y, z, D, -D, V0, sigma);   // Well 2 (+D, -D)
+        V_total += gaussian_well(x, y, z, -D, D, V0, sigma);   // Well 3 (-D, +D)
+        V_total += gaussian_well(x, y, z, -D, -D, V0, sigma);  // Well 4 (-D, -D)
+        
+        potential_output[idx] = V_total;
+    }
+}
+// End of C++ Kernel Concept.</code></pre>
+
+                <h3>3. Python Analysis: Degeneracy Splitting</h3>
+                <p>
+                    We can use a simplified, effective $4 \times 4$ Hamiltonian matrix to model the low-energy states, assuming the wave function is a linear combination of four localized wave packets ($\phi_1, \phi_2, \phi_3, \phi_4$), each centered in a well. This model clearly shows the $\mathbf{E_0 < E_1 \approx E_2 < E_3}$ energy structure characteristic of tunneling systems with high symmetry.
+                </p>
+
+                <h4 id="python-analysis">Python Analysis for Tunneling Degeneracy</h4>
+                <pre class="code-snippet"><code class="language-python"># python_degeneracy_analysis.py: Effective Hamiltonian for 4 Wells
+import numpy as np
+
+# --- System Parameters (Effective Tunneling Model) ---
+E_single = 0.0        # Energy of a particle localized in a single well (diagonal element H_ii)
+T_nn = -0.01          # Nearest-neighbor tunneling amplitude (off-diagonal element H_ij)
+T_diag = -0.0001      # Diagonal tunneling amplitude (across corners H_ik)
+
+# 1. Construct the Effective 4x4 Hamiltonian Matrix (Symmetric in a square)
+# Basis: |1> at (+D, +D), |2> at (+D, -D), |3> at (-D, -D), |4> at (-D, +D)
+# Nearest neighbors (nn): (1,2), (2,3), (3,4), (4,1)
+# Diagonal neighbors (diag): (1,3), (2,4)
+H = np.zeros((4, 4))
+
+# Diagonal terms
+np.fill_diagonal(H, E_single)
+
+# Nearest-neighbor coupling (T_nn)
+H[0, 1] = H[1, 0] = T_nn
+H[1, 2] = H[2, 1] = T_nn
+H[2, 3] = H[3, 2] = T_nn
+H[3, 0] = H[0, 3] = T_nn
+
+# Diagonal coupling (T_diag) - typically much smaller
+H[0, 2] = H[2, 0] = T_diag
+H[1, 3] = H[3, 1] = T_diag
+
+print(f"--- Effective 4x4 Tunneling Hamiltonian (H/T_nn=1) ---")
+print(H / T_nn)
+print("-" * 50)
+
+# 2. Solve the Eigenvalue Problem
+eigenvalues, eigenvectors = np.linalg.eigh(H)
+
+# Sort and print eigenvalues
+sorted_eigenvalues = np.sort(eigenvalues)
+
+# 3. Analyze Results for Degeneracy
+E_ground = sorted_eigenvalues[0]
+E_first_ex = sorted_eigenvalues[1]
+E_second_ex = sorted_eigenvalues[2]
+E_third_ex = sorted_eigenvalues[3]
+
+print(f"--- Energy Spectrum (Low-Lying States) ---")
+print(f"E0 (Ground State, Fully Symmetric): {E_ground: .6f}")
+print(f"E1 (First Excited State): {E_first_ex: .6f}")
+print(f"E2 (Second Excited State): {E_second_ex: .6f}")
+print(f"E3 (Third Excited State): {E_third_ex: .6f}")
+print("-" * 50)
+
+# Check for near-degeneracy between E1 and E2
+degeneracy_gap = E_second_ex - E_first_ex
+
+if degeneracy_gap < 1e-5:
+    print(f"OBSERVATION: E1 and E2 are NEARLY DEGENERATE (Gap: {degeneracy_gap: .2e}).")
+    print("This 2-fold degeneracy is a direct consequence of the square symmetry of the potential.")
+else:
+    print("OBSERVATION: States are well-separated.")
+
+# End of Python Numerical Analysis.</code></pre>
+            </div>
+        </main>
+    </div>
+
+    <!-- The Footer remains outside the container to span full width -->
+    <footer>
+        <p>© 2025 Quantum Interference Engine Technical Document.</p>
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle" class="theme-toggle-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span id="theme-text">Dark Mode</span>
+        </button>
+    </footer>
+
+    <!-- JavaScript for Theme Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const toggleButton = document.getElementById('theme-toggle');
+
+            // --- Theme Toggle Logic ---
+            const initialTheme = localStorage.getItem('theme') || 'light';
+            const isDarkMode = initialTheme === 'dark';
+
+            const updateThemeUI = (isDark) => {
+                // SVG for sun (light mode icon)
+                const svgSun = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+                // SVG for moon (dark mode icon)
+                const svgMoon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+                if (isDark) {
+                    body.classList.add('dark-theme');
+                    toggleButton.innerHTML = `${svgMoon}<span>Light Mode</span>`;
+                } else {
+                    body.classList.remove('dark-theme');
+                    toggleButton.innerHTML = `${svgSun}<span>Dark Mode</span>`;
+                }
+            };
+
+            updateThemeUI(isDarkMode);
+
+            toggleButton.addEventListener('click', () => {
+                const isDark = body.classList.toggle('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeUI(isDark);
+            });
+        });
+    </script>
+</body>
+</html>

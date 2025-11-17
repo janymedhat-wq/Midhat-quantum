@@ -1,0 +1,414 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HPC Quantum Computing - Harmonic Oscillator</title>
+
+    <!-- Importing a new, modern font: Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- MathJax for LaTeX typesetting -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* General body styles for a light, minimalist theme */
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #f0f0f0;
+            color: #111;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark theme styles */
+        body.dark-theme {
+            background-color: #111;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .tutorial-content { border-top: 1px solid #444; }
+        body.dark-theme pre { background-color: #222; }
+        body.dark-theme .theme-toggle-button { color: #f0f0f0; border-color: #f0f0f0; }
+        body.dark-theme .theme-toggle-button:hover { background-color: #f0f0f0; color: #111; }
+        body.dark-theme .equation-block { border-left: 3px solid #7cb3ff; background-color: #222; }
+        body.dark-theme figcaption { color: #ccc; }
+        body.dark-theme .main-content h1 { color: #f0f0f0; }
+
+        /* Container for the main content */
+        .container {
+            flex-grow: 1;
+            padding: clamp(30px, 5vw, 50px);
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* --- Main Text Section --- */
+        .main-content h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(3rem, 10vw, 7rem);
+            line-height: 1;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #111;
+        }
+
+        /* --- Tutorial Section Styles --- */
+        .tutorial-content {
+            margin-top: clamp(50px, 10vw, 100px);
+            padding-top: clamp(25px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(20px, 5vw, 40px);
+        }
+        .tutorial-content p { line-height: 1.6; max-width: 800px; }
+        .tutorial-content h2, .tutorial-content h3, .tutorial-content h4 { font-weight: 700; text-transform: uppercase; }
+        .tutorial-content h2 { font-size: clamp(1.5rem, 4vw, 2rem); letter-spacing: 2px; }
+        .tutorial-content h3 { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 2rem; margin-bottom: 1rem; }
+
+        pre { background-color: #e5e7eb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; width: 100%; box-sizing: border-box; }
+        pre code { font-size: 0.9rem; }
+
+        /* Style for LaTeX equations */
+        .equation-block {
+            padding: 10px;
+            margin: 1.5rem 0;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+        }
+
+        /* Image/Visualization Styling */
+        .viz-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto; /* Centering the visualization */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+        body.dark-theme .viz-container { border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+
+        .viz-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 200px; /* Ensure placeholder visibility */
+        }
+        .viz-container figcaption {
+            padding: 10px;
+            font-size: 0.8rem;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        body.dark-theme .viz-container figcaption {
+            background-color: #282828;
+        }
+
+        /* --- Footer and Theme Toggle --- */
+        footer {
+            margin-top: auto;
+            padding: 30px clamp(30px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .theme-toggle-button {
+            background: none; border: 1px solid #111; color: #111; padding: 8px 16px;
+            font-family: 'Space Mono', monospace; font-size: 0.9rem; cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease; border-radius: 5px;
+            display: flex; align-items: center; gap: 8px; text-transform: uppercase;
+        }
+        .theme-toggle-button:hover { background-color: #111; color: #f0f0f0; }
+        .dark-theme .theme-toggle-button { border: 1px solid #f0f0f0; color: #f0f0f0; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container { padding: 30px; text-align: center; align-items: center; }
+            footer { flex-direction: column; justify-content: center; align-items: center; gap: 10px; }
+            .main-content h1 { letter-spacing: 2px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main content area -->
+        <div class="main-content">
+            <h1>QUANTUM HPC ENGINE</h1>
+        </div>
+
+        <!-- Tutorial Section (Core Technical Content) -->
+        <main class="tutorial-content">
+            <h2 class="books-title">Quantum Harmonic Oscillator: Eigenstates and Wave Packet Dynamics</h2>
+            <p class="text-sm text-gray-500">A guide to modeling the one-dimensional Quantum Harmonic Oscillator (QHO), focusing on numerical calculation of energy states and visualization of time-evolving wave packets using C++ and Python.</p>
+
+            <div class="content-section">
+                <p>
+                    The Quantum Harmonic Oscillator (QHO) models a quantum particle confined by a parabolic potential. It is one of the few exactly solvable problems in quantum mechanics and serves as the foundation for quantum field theory, solid-state physics, and molecular vibrations. Our goal is to simulate the time evolution of a non-stationary state—a wave packet—to observe its characteristic oscillatory behavior.
+                </p>
+
+                <!-- Visualization GIF added here -->
+                <div class="viz-container">
+                    <img src="color.gif"
+                          alt="Animated simulation showing the probability density of a quantum wave packet oscillating within a parabolic potential."
+                          onerror="this.onerror=null; this.src='https://placehold.co/800x400/007bff/white?text=QHO+Wave+Packet+Visualization';"/>
+                    <figcaption>Visualization of a coherent quantum wave packet (probability density $|\Psi(x,t)|^2$) oscillating in the parabolic potential well of the QHO. </figcaption>
+                </div>
+                <!-- End Visualization GIF -->
+
+                <h3>1. The Physics: Hamiltonian and Eigenstates</h3>
+                <p>
+                    The QHO is defined by the Hamiltonian operator, $\hat{H}$, which represents the total energy (kinetic and potential) of the system. For a one-dimensional system, the potential energy is $\frac{1}{2} m \omega^2 x^2$, where $m$ is the mass and $\omega$ is the classical oscillation frequency.
+                </p>
+                <h4 id="hamiltonian">The Hamiltonian Operator and Time-Independent Schrödinger Equation</h4>
+                <div class="equation-block">
+                    $$\hat{H} = -\frac{\hbar^2}{2m} \frac{d^2}{dx^2} + \frac{1}{2} m \omega^2 x^2$$
+                    $$\hat{H} \psi_n(x) = E_n \psi_n(x) \quad \text{(Time-Independent Schrödinger Equation)}$$
+                </div>
+                <p>
+                    The solutions, $\psi_n(x)$, are the stationary energy eigenstates, and the corresponding eigenvalues, $E_n$, are the discrete, quantized energy levels. A key feature is the non-zero ground state energy (zero-point energy), $E_0$.
+                </p>
+                <h4 id="eigenvalues">Energy Eigenvalues and Eigenfunctions</h4>
+                <div class="equation-block">
+                    $$E_n = \left(n + \frac{1}{2}\right) \hbar \omega \quad \text{for } n = 0, 1, 2, \dots$$
+                    $$\psi_n(x) = A_n H_n\left(\frac{x}{x_0}\right) e^{-x^2/(2x_0^2)} \quad \text{(where } x_0 = \sqrt{\hbar/(m\omega)} \text{)}$$
+                </div>
+                <p>
+                    Here, $H_n(z)$ are the Hermite polynomials, which dictate the characteristic shapes of the wave functions. High-performance computing is essential for efficiently calculating these polynomials and their normalization coefficients, $A_n$, for large $n$.
+                </p>
+
+                <h3>2. Time Evolution and Wave Packet Construction</h3>
+                <p>
+                    A non-stationary state, $\Psi(x, t)$, is a superposition of energy eigenstates. This state evolves in time according to the time-dependent Schrödinger equation.
+                </p>
+                <h4 id="time-evolution">General Solution (Wave Packet)</h4>
+                <div class="equation-block">
+                    $$\Psi(x, t) = \sum_{n=0}^\infty c_n \psi_n(x) e^{-i E_n t / \hbar}$$
+                </div>
+                <p>
+                    The coefficients $c_n$ are determined by the initial wave function $\Psi(x, 0)$ via the overlap integral $\langle \psi_n | \Psi(x, 0) \rangle$. For visualization, we often choose an initial Gaussian wave packet, which closely mimics classical motion and is a coherent state. Its probability density, $|\Psi(x, t)|^2$, oscillates without spreading for a simple harmonic oscillator.
+                </p>
+
+                <h3>3. Core C++ Implementation: Eigenstate Calculation (OpenGL/Math)</h3>
+                <p>
+                    The C++ code provides the high-speed engine for calculating the exact values of the Hermite polynomials and the resulting eigenstates on a spatial grid. This is also where the state data would be prepared for rendering via an OpenGL context.
+                </p>
+                <pre class="code-snippet"><code class="language-cpp">// qho_math.cpp: Core C++ Engine for Eigenstate Calculation
+#include <vector>
+#include <cmath>
+#include <iostream>
+
+// Physical constants (normalized for simplicity: hbar=m=omega=1)
+const double HBAR = 1.0;
+const double MASS = 1.0;
+const double OMEGA = 1.0;
+const double X0 = 1.0; // characteristic length
+
+// Recursive function to calculate Hermite polynomials H_n(z)
+// H_{n+1}(z) = 2z H_n(z) - 2n H_{n-1}(z)
+double hermite_polynomial(int n, double z) {
+    if (n == 0) return 1.0;
+    if (n == 1) return 2.0 * z;
+
+    // Use dynamic programming (or simple recursion) for high n values
+    if (n > 1) {
+        return 2.0 * z * hermite_polynomial(n - 1, z) - 2.0 * (n - 1) * hermite_polynomial(n - 2, z);
+    }
+    return 0.0; // Should not happen
+}
+
+// QHO Eigenfunction (normalized)
+// Note: Normalization factor A_n requires Gamma function, simplified here for core logic.
+double calculate_eigenstate(int n, double x) {
+    double z = x / X0;
+    // Un-normalized part: Hermite polynomial * Gaussian envelope
+    double hermite_part = hermite_polynomial(n, z);
+    double gaussian_part = exp(-z * z / 2.0);
+    
+    // In a real application, normalization and constant calculation would be pre-computed
+    return hermite_part * gaussian_part;
+}
+
+// Conceptual class for preparing state data for OpenGL rendering
+class QHO_Renderer_Data {
+public:
+    // This method would fill a VBO (Vertex Buffer Object) in an OpenGL context
+    // with the real and imaginary parts of the wavefunction for plotting.
+    std::vector<double> generate_probability_density(int max_n, double x_min, double x_max, int num_points, double t) {
+        std::vector<double> density_field(num_points);
+        double dx = (x_max - x_min) / (num_points - 1);
+
+        for (int i = 0; i < num_points; ++i) {
+            double x = x_min + i * dx;
+            // The full time-evolution sum needs to be performed, but for C++ core,
+            // we focus on providing the building blocks (eigenstates).
+            // A realistic implementation would use a complex<double> type.
+            density_field[i] = calculate_eigenstate(0, x) * calculate_eigenstate(0, x); // Example: just ground state density
+        }
+
+        std::cout << "C++ calculated " << num_points << " points for density field.\n";
+        return density_field;
+    }
+};
+
+// End of C++ Eigenstate calculation.</code></pre>
+
+                <h3>4. Python Integration: Wave Packet Dynamics and Visualization</h3>
+                <p>
+                    Python, specifically using NumPy for array manipulation and Matplotlib for dynamic plotting, provides a flexible environment for constructing the wave packet and animating its evolution. This code assumes the C++ components (or similar NumPy functions) are available to provide the $\psi_n(x)$ functions.
+                </p>
+                <pre class="code-snippet"><code class="language-python"># qho_viz.py: Python Script for Wave Packet Animation
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.special import hermite as H
+
+# --- Physics & Utility Functions (Self-contained Python version) ---
+
+def energy_eigenvalue(n, omega=1.0):
+    """Calculates the energy eigenvalue E_n."""
+    # Assuming hbar=1
+    return (n + 0.5) * omega
+
+def eigenstate(n, x, omega=1.0, m=1.0, hbar=1.0):
+    """Calculates the normalized QHO eigenfunction psi_n(x)."""
+    alpha = np.sqrt(m * omega / hbar)
+    x_scaled = alpha * x
+    
+    # Normalization factor
+    A_n = 1.0 / np.sqrt(np.sqrt(np.pi) * (2**n) * np.math.factorial(n) / alpha)
+    
+    # Hermite polynomial H_n(x_scaled)
+    # H(n) returns a polynomial object; we evaluate it at x_scaled
+    H_n_val = H(n)(x_scaled)
+    
+    gaussian = np.exp(-0.5 * x_scaled**2)
+    return A_n * H_n_val * gaussian
+
+def wave_packet_at_time(x, t, coeffs, max_n, omega=1.0):
+    """Constructs the time-evolving wave packet Psi(x, t)."""
+    psi_xt = np.zeros_like(x, dtype=complex)
+    
+    for n in range(max_n + 1):
+        if np.abs(coeffs[n]) > 1e-9: # Only sum non-zero coefficients
+            E_n = energy_eigenvalue(n, omega)
+            psi_n_x = eigenstate(n, x, omega)
+            time_factor = np.exp(-1j * E_n * t) # Assuming hbar=1
+            
+            psi_xt += coeffs[n] * psi_n_x * time_factor
+            
+    return psi_xt
+
+# --- Simulation Parameters and Execution ---
+X_MAX = 5.0
+N_POINTS = 500
+MAX_N = 10 # Truncate sum at n=10
+OMEGA = 1.0
+
+x = np.linspace(-X_MAX, X_MAX, N_POINTS)
+
+# Define initial state: A Gaussian wave packet shifted from the origin (x0=1)
+# This is a good approximation for a coherent state.
+initial_gaussian = np.exp(-0.5 * (x - 1.0)**2)
+initial_gaussian /= np.sqrt(np.trapz(np.abs(initial_gaussian)**2, x))
+
+# Calculate expansion coefficients c_n = <psi_n | Psi(x, 0)>
+coeffs = []
+for n in range(MAX_N + 1):
+    psi_n = eigenstate(n, x, OMEGA)
+    c_n = np.trapz(np.conj(psi_n) * initial_gaussian, x)
+    coeffs.append(c_n)
+coeffs = np.array(coeffs)
+
+# --- Visualization (Conceptual) ---
+def animate_qho(num_frames, total_time):
+    """Conceptual animation loop for Matplotlib/OpenGL."""
+    T_period = 2 * np.pi / OMEGA
+    time_points = np.linspace(0, T_period * total_time, num_frames)
+
+    print(f"Simulating wave packet over {num_frames} frames (Period = {T_period:.2f})")
+
+    for t in time_points:
+        psi_xt = wave_packet_at_time(x, t, coeffs, MAX_N, OMEGA)
+        prob_density = np.abs(psi_xt)**2
+        
+        # Plotting the probability density |Psi(x, t)|^2
+        # (This section would generate the GIF or frame for OpenGL texture)
+        plt.clf()
+        plt.plot(x, prob_density, label=f'$|\Psi(x, t)|^2$ at $t={t:.2f}$')
+        plt.plot(x, 0.5 * x**2, 'k--', alpha=0.3, label='Potential $V(x)$') # Plot potential
+        plt.ylim(0, 1.0)
+        plt.title('QHO Wave Packet Dynamics')
+        plt.xlabel('Position $x$')
+        plt.ylabel('Probability Density')
+        plt.legend()
+        # plt.show() # Actual rendering is done here
+
+    return f"Animation finished for {num_frames} frames."
+
+# Call to run the simulation setup (uncomment to run in a scripting environment)
+# print(animate_qho(num_frames=50, total_time=2))
+
+# End of Python Visualization script.</code></pre>
+            </div>
+        </main>
+    </div>
+
+    <!-- The Footer remains outside the container to span full width -->
+    <footer>
+        <p>© 2025 HPC-Quantum Technical Document.</p>
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle" class="theme-toggle-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span id="theme-text">Dark Mode</span>
+        </button>
+    </footer>
+
+    <!-- JavaScript for Theme Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const toggleButton = document.getElementById('theme-toggle');
+
+            // --- Theme Toggle Logic ---
+            // We'll default to light mode if not set to prevent issues if localStorage is unavailable
+            const initialTheme = localStorage.getItem('theme') || 'light';
+            const isDarkMode = initialTheme === 'dark';
+
+            const updateThemeUI = (isDark) => {
+                const svgSun = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+                const svgMoon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+                if (isDark) {
+                    body.classList.add('dark-theme');
+                    toggleButton.innerHTML = `${svgMoon}<span>Light Mode</span>`;
+                } else {
+                    body.classList.remove('dark-theme');
+                    toggleButton.innerHTML = `${svgSun}<span>Dark Mode</span>`;
+                }
+            };
+
+            updateThemeUI(isDarkMode);
+
+            toggleButton.addEventListener('click', () => {
+                const isDark = body.classList.toggle('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeUI(isDark);
+            });
+        });
+    </script>
+</body>
+</html>

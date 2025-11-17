@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Dynamics: Time-Dependent Schrödinger Equation</title>
+
+    <!-- Importing a new, modern font: Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- MathJax for LaTeX typesetting -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* General body styles for a light, minimalist theme */
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #f0f0f0;
+            color: #111;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark theme styles */
+        body.dark-theme {
+            background-color: #111;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .tutorial-content { border-top: 1px solid #444; }
+        body.dark-theme pre { background-color: #222; }
+        body.dark-theme .theme-toggle-button { color: #f0f0f0; border-color: #f0f0f0; }
+        body.dark-theme .theme-toggle-button:hover { background-color: #f0f0f0; color: #111; }
+        body.dark-theme .equation-block { border-left: 3px solid #7cb3ff; background-color: #222; }
+        body.dark-theme figcaption { color: #ccc; }
+        body.dark-theme .main-content h1 { color: #f0f0f0; }
+
+        /* Container for the main content */
+        .container {
+            flex-grow: 1;
+            padding: clamp(30px, 5vw, 50px);
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* --- Main Text Section --- */
+        .main-content h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(3rem, 10vw, 7rem);
+            line-height: 1;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #111;
+        }
+
+        /* --- Tutorial Section Styles --- */
+        .tutorial-content {
+            margin-top: clamp(50px, 10vw, 100px);
+            padding-top: clamp(25px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(20px, 5vw, 40px);
+        }
+        .tutorial-content p { line-height: 1.6; max-width: 800px; }
+        .tutorial-content h2, .tutorial-content h3, .tutorial-content h4 { font-weight: 700; text-transform: uppercase; }
+        .tutorial-content h2 { font-size: clamp(1.5rem, 4vw, 2rem); letter-spacing: 2px; }
+        .tutorial-content h3 { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 2rem; margin-bottom: 1rem; }
+
+        pre { background-color: #e5e7eb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; width: 100%; box-sizing: border-box; }
+        pre code { font-size: 0.9rem; }
+
+        /* Style for LaTeX equations */
+        .equation-block {
+            padding: 10px;
+            margin: 1.5rem 0;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+        }
+
+        /* Image/Visualization Styling */
+        .viz-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto; /* Centering the visualization */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+        body.dark-theme .viz-container { border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+
+        .viz-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 200px; /* Ensure placeholder visibility */
+        }
+        .viz-container figcaption {
+            padding: 10px;
+            font-size: 0.8rem;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        body.dark-theme .viz-container figcaption {
+            background-color: #282828;
+        }
+
+        /* --- Footer and Theme Toggle --- */
+        footer {
+            margin-top: auto;
+            padding: 30px clamp(30px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .theme-toggle-button {
+            background: none; border: 1px solid #111; color: #111; padding: 8px 16px;
+            font-family: 'Space Mono', monospace; font-size: 0.9rem; cursor: pointer;
+            transition: background-color 0.3s ease, color: 0.3s ease; border-radius: 5px;
+            display: flex; align-items: center; gap: 8px; text-transform: uppercase;
+        }
+        .theme-toggle-button:hover { background-color: #111; color: #f0f0f0; }
+        .dark-theme .theme-toggle-button { border: 1px solid #f0f0f0; color: #f0f0f0; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container { padding: 30px; text-align: center; align-items: center; }
+            footer { flex-direction: column; justify-content: center; align-items: center; gap: 10px; }
+            .main-content h1 { letter-spacing: 2px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main content area -->
+        <div class="main-content">
+            <h1>QUANTUM DYNAMICS HPC</h1>
+        </div>
+
+        <!-- Tutorial Section (Core Technical Content) -->
+        <main class="tutorial-content">
+            <h2 class="books-title">Time-Dependent Schrödinger Equation: Gaussian Wave Packet</h2>
+            <p class="text-sm text-gray-500">
+                A guide to simulating the time evolution of a non-relativistic quantum particle using the TDSE, focusing on the spreading of a **Gaussian wave packet**.
+            </p>
+
+            <div class="content-section">
+                <p>
+                    The time evolution of any quantum system is governed by the **Time-Dependent Schrödinger Equation (TDSE)**. For a single particle moving in one dimension, this is a linear partial differential equation that links the change in the wave function ($\Psi$) over time to the action of the Hamiltonian operator ($\hat{H}$).
+                </p>
+
+                <h4 id="tdse">The Time-Dependent Schrödinger Equation</h4>
+                <div class="equation-block">
+                    $$i\hbar \frac{\partial}{\partial t}\Psi(x,t) = \hat{H}\Psi(x,t)$$
+                </div>
+
+                <p>
+                    For a particle of mass $m$ in a potential $V(x)$, the Hamiltonian is composed of kinetic ($\hat{T}$) and potential ($\hat{V}$) energy operators: $\hat{H} = \hat{T} + \hat{V}$.
+                </p>
+                <div class="equation-block">
+                    $$\hat{H} = -\frac{\hbar^2}{2m}\frac{\partial^2}{\partial x^2} + V(x)$$
+                </div>
+
+                <div class="viz-container">
+                    <img src="TimeDependent_Schrodinger.gif"
+                         alt="Animation showing a Gaussian wave packet starting localized and spreading out over time as it propagates."
+                         onerror="this.onerror=null; this.src='https://placehold.co/800x400/003366/FFF?text=Wave+Packet+Time+Evolution+Placeholder';"/>
+                    <figcaption>Conceptual diagram showing the probability density $|\Psi(x,t)|^2$ of a Gaussian wave packet spreading as it evolves.</figcaption>
+                </div>
+
+                <h3>1. Initial Condition: The Gaussian Wave Packet</h3>
+                <p>
+                    The **Gaussian wave packet** is a key initial state in quantum mechanics because it minimizes the Heisenberg uncertainty product. It represents a particle localized around $x_0$ with an initial average momentum $p_0$.
+                </p>
+
+                <h4 id="gaussian-init">Initial Wave Function $\Psi(x, 0)$</h4>
+                <p>
+                    The wave function is the product of a Gaussian envelope (position localization, defined by width $\sigma$) and a plane wave (momentum component $p_0$):
+                </p>
+                <div class="equation-block">
+                    $$\Psi(x, 0) = A \cdot \exp\left[-\frac{(x-x_0)^2}{4\sigma^2}\right] \cdot \exp\left[\frac{i p_0 x}{\hbar}\right]$$
+                </div>
+                <p>
+                    The simulation's goal is to track the evolution of the probability density, $P(x, t) = |\Psi(x, t)|^2$. For a free particle ($V(x)=0$), the Gaussian remains Gaussian, but its width $\sigma(t)$ increases linearly with time, illustrating **wave packet spreading**.
+                </p>
+
+                <h3>2. Numerical Solution: Split-Step Fourier Method (SSFM)</h3>
+                <p>
+                    Numerically solving the TDSE on a high-performance cluster often utilizes the **Split-Step Fourier Method** (SSFM). This method is highly efficient because it leverages the Fast Fourier Transform (FFT) to handle the kinetic energy term in momentum space.
+                </p>
+                <p>
+                    The time evolution operator for a small time step $\Delta t$ is approximated by:
+                </p>
+                <div class="equation-block">
+                    $$\hat{U}(\Delta t) \approx e^{-i\hat{T}\Delta t / 2\hbar} e^{-i\hat{V}\Delta t / \hbar} e^{-i\hat{T}\Delta t / 2\hbar}$$
+                </div>
+                <p>
+                    This approach splits the evolution into three steps: half-step Kinetic evolution (FFT), full-step Potential evolution (real space multiplication), and another half-step Kinetic evolution (inverse FFT).
+                </p>
+
+                <h4 id="python-init">Python Initialization: Defining the Initial State</h4>
+                <pre class="code-snippet"><code class="language-python"># quantum_init.py: Initializing the Gaussian Wave Packetimport numpy as np
+# --- Physical Constants (Scaled) ---M = 1.0           # Mass (e.g., electron mass)H_BAR = 1.0       # Reduced Planck constant (set to 1.0 for simplicity)
+# --- Grid Parameters ---N_POINTS = 2048   # Number of spatial grid points (must be a power of 2 for FFT)L_BOX = 100.0     # Total length of the spatial domain
+# --- Initial Gaussian Parameters ---X0 = L_BOX / 4    # Initial center positionP0 = 5.0          # Initial average momentum SIGMA = 4.0       # Initial position spread (standard deviation)
+def initial_gaussian(x, x0, p0, sigma):
+    """Calculates the initial Gaussian wave function Psi(x, 0)."""
+    # 1. Position-space Gaussian envelope
+    pos_factor = np.exp(-(x - x0)**2 / (4 * sigma**2))
+    # 2. Momentum-carrying phase factor
+    mom_factor = np.exp(1j * p0 * x / H_BAR)
+    
+    # Calculate normalization constant A (A = (2 * pi * sigma^2)^(-1/4))
+    A = (2 * np.pi * sigma**2)**(-0.25)
+    
+    psi0 = A * pos_factor * mom_factor
+    return psi0
+
+# Create the spatial grid
+x = np.linspace(0, L_BOX, N_POINTS, endpoint=False)
+psi_initial = initial_gaussian(x, X0, P0, SIGMA)
+
+print(f"Initialized Gaussian on {N_POINTS} points.")
+print(f"Initial momentum P0: {P0}, Position Spread sigma: {SIGMA}")
+# Note: The sum of |psi|^2 should be 1.0 (normalization check)
+norm = np.sum(np.abs(psi_initial)**2) * (L_BOX / N_POINTS)
+print(f"Normalization check: {norm:.6f}")
+
+# End of Python Initialization.</code></pre>
+
+                <h3>3. High-Performance Step: Kinetic Evolution</h3>
+                <p>
+                    The most computationally intensive part is applying the kinetic energy operator $\hat{T}$. In real space, this requires applying the second derivative. In **momentum space**, however, the operator becomes a simple multiplication:
+                </p>
+                <div class="equation-block">
+                    $$\hat{T} \rightarrow \frac{p^2}{2m}$$
+                </div>
+                <p>
+                    This is why the SSFM is preferred: we switch to momentum space using **FFT**, apply the multiplication, and switch back using **Inverse FFT**.
+                </p>
+
+                <h4 id="cuda-kernel">Conceptual C++ Kernel for Kinetic Step</h4>
+                <pre class="code-snippet"><code class="language-cpp">// conceptual_kinetic_step.cpp: Conceptual SSFM Kinetic Half-Step
+#include <complex>
+#include <cmath>
+// Constants
+const double H_BAR = 1.0;
+const double M = 1.0;
+const std::complex<double> I(0.0, 1.0); // Complex number i
+
+// Conceptual function for applying the Kinetic term in momentum space
+// This function would typically run on a GPU using a CUDA kernel (e.g., cuFFT)
+void apply_kinetic_half_step(
+    std::complex<double>* psi_momentum, // Wave function in momentum space (FFT(Psi))
+    const double* k_values,            // Array of momentum values p/hbar
+    int N,                             // Number of points
+    double dt)                         // Time step
+{
+    double dt_half = dt / 2.0;
+    
+    for (int i = 0; i < N; ++i) {
+        double k = k_values[i];
+        // The kinetic energy is T = (hbar^2 * k^2) / (2m)
+        double T_kinetic = (H_BAR * H_BAR * k * k) / (2.0 * M);
+        
+        // Calculate the evolution factor: exp(-i * T * dt_half / hbar)
+        std::complex<double> evolution_factor = std::exp(-I * T_kinetic * dt_half / H_BAR);
+        
+        // Apply the evolution operator by multiplication
+        psi_momentum[i] *= evolution_factor;
+    }
+}
+
+// Conceptual Potential Step (applied in real space, V(x) is a simple multiplication)
+void apply_potential_full_step(
+    std::complex<double>* psi_real,
+    const double* V_x, // Potential at each spatial point
+    int N,
+    double dt)
+{
+    for (int i = 0; i < N; ++i) {
+        double V = V_x[i];
+        // Calculate the evolution factor: exp(-i * V * dt / hbar)
+        std::complex<double> evolution_factor = std::exp(-I * V * dt / H_BAR);
+
+        // Apply the evolution operator by multiplication
+        psi_real[i] *= evolution_factor;
+    }
+}
+
+// End of Conceptual SSFM Core.</code></pre>
+            </div>
+        </main>
+    </div>
+
+    <!-- The Footer remains outside the container to span full width -->
+    <footer>
+        <p>© 2025 Quantum Dynamics HPC Technical Document.</p>
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle" class="theme-toggle-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span id="theme-text">Dark Mode</span>
+        </button>
+    </footer>
+
+    <!-- JavaScript for Theme Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const toggleButton = document.getElementById('theme-toggle');
+
+            // --- Theme Toggle Logic ---
+            const initialTheme = localStorage.getItem('theme') || 'light';
+            const isDarkMode = initialTheme === 'dark';
+
+            const updateThemeUI = (isDark) => {
+                // Sun Icon (for light mode button text)
+                const svgSun = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+                // Moon Icon (for dark mode button text)
+                const svgMoon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+                if (isDark) {
+                    body.classList.add('dark-theme');
+                    toggleButton.innerHTML = `${svgMoon}<span>Light Mode</span>`;
+                } else {
+                    body.classList.remove('dark-theme');
+                    toggleButton.innerHTML = `${svgSun}<span>Dark Mode</span>`;
+                }
+            };
+
+            updateThemeUI(isDarkMode);
+
+            toggleButton.addEventListener('click', () => {
+                const isDark = body.classList.toggle('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeUI(isDark);
+            });
+        });
+    </script>
+</body>
+</html>

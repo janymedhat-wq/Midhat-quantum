@@ -1,0 +1,380 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HPC Quantum Matter Engine: 1D Interacting Fermions</title>
+
+    <!-- Importing a new, modern font: Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- MathJax for LaTeX typesetting -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* General body styles for a light, minimalist theme */
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #f0f0f0;
+            color: #111;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark theme styles */
+        body.dark-theme {
+            background-color: #111;
+            color: #f0f0f0;
+        }
+
+        body.dark-theme .tutorial-content { border-top: 1px solid #444; }
+        body.dark-theme pre { background-color: #222; }
+        body.dark-theme .theme-toggle-button { color: #f0f0f0; border-color: #f0f0f0; }
+        body.dark-theme .theme-toggle-button:hover { background-color: #f0f0f0; color: #111; }
+        body.dark-theme .equation-block { border-left: 3px solid #7cb3ff; background-color: #222; }
+        body.dark-theme figcaption { color: #ccc; }
+        body.dark-theme .main-content h1 { color: #f0f0f0; }
+
+        /* Container for the main content */
+        .container {
+            flex-grow: 1;
+            padding: clamp(30px, 5vw, 50px);
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* --- Main Text Section --- */
+        .main-content h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(3rem, 10vw, 7rem);
+            line-height: 1;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #111;
+        }
+
+        /* --- Tutorial Section Styles --- */
+        .tutorial-content {
+            margin-top: clamp(50px, 10vw, 100px);
+            padding-top: clamp(25px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(20px, 5vw, 40px);
+        }
+        .tutorial-content p { line-height: 1.6; max-width: 800px; }
+        .tutorial-content h2, .tutorial-content h3, .tutorial-content h4 { font-weight: 700; text-transform: uppercase; }
+        .tutorial-content h2 { font-size: clamp(1.5rem, 4vw, 2rem); letter-spacing: 2px; }
+        .tutorial-content h3 { font-size: clamp(1rem, 2vw, 1.2rem); margin-top: 2rem; margin-bottom: 1rem; }
+
+        pre { background-color: #e5e7eb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; width: 100%; box-sizing: border-box; }
+        pre code { font-size: 0.9rem; }
+
+        /* Style for LaTeX equations */
+        .equation-block {
+            padding: 10px;
+            margin: 1.5rem 0;
+            border-left: 3px solid #007bff;
+            background-color: #f8f9fa;
+        }
+
+        /* Image/Visualization Styling */
+        .viz-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto; /* Centering the visualization */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+        body.dark-theme .viz-container { border-color: #444; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+
+        .viz-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 200px; /* Ensure placeholder visibility */
+        }
+        .viz-container figcaption {
+            padding: 10px;
+            font-size: 0.8rem;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        body.dark-theme .viz-container figcaption {
+            background-color: #282828;
+        }
+
+        /* --- Footer and Theme Toggle --- */
+        footer {
+            margin-top: auto;
+            padding: 30px clamp(30px, 5vw, 50px);
+            border-top: 1px solid #c0c0c0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .theme-toggle-button {
+            background: none; border: 1px solid #111; color: #111; padding: 8px 16px;
+            font-family: 'Space Mono', monospace; font-size: 0.9rem; cursor: pointer;
+            transition: background-color 0.3s ease, color: 0.3s ease; border-radius: 5px;
+            display: flex; align-items: center; gap: 8px; text-transform: uppercase;
+        }
+        .theme-toggle-button:hover { background-color: #111; color: #f0f0f0; }
+        .dark-theme .theme-toggle-button { border: 1px solid #f0f0f0; color: #f0f0f0; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container { padding: 30px; text-align: center; align-items: center; }
+            footer { flex-direction: column; justify-content: center; align-items: center; gap: 10px; }
+            .main-content h1 { letter-spacing: 2px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main content area -->
+        <div class="main-content">
+            <h1>QUANTUM MATTER HPC</h1>
+        </div>
+
+        <!-- Tutorial Section (Core Technical Content) -->
+        <main class="tutorial-content">
+            <h2 class="books-title">1D Interacting Fermions: The Hubbard Model</h2>
+            <p class="text-sm text-gray-500">A guide to simulating strongly correlated quantum systems using the Exact Diagonalization (ED) method, accelerated by CUDA, and analyzed with Machine Learning (MLP).</p>
+
+            <div class="content-section">
+                <p>
+                    The 1D Hubbard Model is the simplest microscopic model capturing the competition between **kinetic energy** (hopping) and **interaction energy** (on-site repulsion) for fermions on a lattice. These systems are foundational for understanding phenomena like magnetism and high-temperature superconductivity. Simulating them involves solving the many-body Schrödinger equation, typically transforming into a sparse eigenvalue problem in the Fock basis.
+                </p>
+
+                <!-- Visualization GIF added here -->
+                <div class="viz-container">
+                    <!-- CRITICAL: REPLACE THIS URL with a full **HTTPS** link to your externally hosted GIF! LOCAL FILE PATHS WILL NOT WORK DUE TO SECURITY. -->
+                    <img src="1dfermion.gif"
+                          alt="Animated simulation showing particle density or spin correlation in a 1D lattice."
+                          onerror="this.onerror=null; this.src='https://placehold.co/800x400/003366/FFD700?text=1D+Fermion+Correlation+Visualization+Missing';"/>
+                    <figcaption>Conceptual visualization of particle density or spin correlation across a 1D fermionic lattice as interaction strength changes.</figcaption>
+                </div>
+                <!-- End Visualization GIF -->
+
+                <h3>1. The Physics: Hubbard Hamiltonian</h3>
+                <p>
+                    The **Hubbard Hamiltonian** describes electrons (fermions) hopping between neighboring sites with amplitude $t$, and incurring an energy cost $U$ when two electrons (one up, one down spin) occupy the same site.
+                </p>
+                <h4 id="hamiltonian">The 1D Hubbard Hamiltonian</h4>
+                <div class="equation-block">
+                    $$\hat{H} = -t \sum_{\langle i, j \rangle, \sigma} (\hat{c}_{i\sigma}^\dagger \hat{c}_{j\sigma} + \text{h.c.}) + U \sum_{i} \hat{n}_{i\uparrow} \hat{n}_{i\downarrow}$$
+                </div>
+                <p>
+                    Here, $t$ is the **Hopping Parameter** (Kinetic Energy), and $U$ is the **On-Site Repulsion** (Interaction Energy). The simulation aims to find the ground state $|\Psi_0\rangle$ by solving $\hat{H}|\Psi_0\rangle = E_0 |\Psi_0\rangle$. Due to the exponential growth of the Hilbert space (Dimension $D = 4^L$ for $L$ sites), this problem quickly requires massive parallelism, making the **Sparse Matrix-Vector Multiplication (SpMV)** the bottleneck.
+                </p>
+
+                <h3>2. Core C++ Implementation: Sparse Matrix Operations</h3>
+                <p>
+                    The Hamiltonian matrix is sparse, meaning most elements are zero. We use the **Compressed Sparse Row (CSR)** format in C++ for efficient memory storage. The core of the Exact Diagonalization (ED) method (e.g., using the Lanczos algorithm) involves repeatedly computing the product $\mathbf{y} = \mathbf{H}\mathbf{x}$.
+                </p>
+                <pre class="code-snippet"><code class="language-cpp">// hpc_ed_core.cpp: C++ Sparse Matrix-Vector Multiply Setup
+#include <vector>
+#include <iostream>
+
+// Simplified CSR structure for the sparse Hamiltonian Matrix H
+struct SparseMatrixCSR {
+    int N; // Dimension (size of Hilbert Space)
+    std::vector<double> values;     // Non-zero elements of H
+    std::vector<int> col_indices; // Column index for each value
+    std::vector<int> row_pointers; // Pointer to the start of each row in values/col_indices
+};
+
+// Function to perform y = H * x, designed to be GPU-compatible
+void sparse_mat_vec_multiply(const SparseMatrixCSR& H, const std::vector<double>& x, std::vector<double>& y) {
+    // This C++ function will typically call a CUDA kernel for acceleration
+    if (H.row_pointers.size() == 0 || H.N == 0) return;
+    
+    // --- Conceptual CPU Fallback/Host Code ---
+    std::fill(y.begin(), y.end(), 0.0);
+    
+    for (int i = 0; i < H.N; ++i) { // Loop over rows (i.e., basis states)
+        double row_sum = 0.0;
+        int row_start = H.row_pointers[i];
+        int row_end = H.row_pointers[i + 1];
+        
+        // Loop over non-zero elements in row i
+        for (int j = row_start; j < row_end; ++j) {
+            int col = H.col_indices[j];
+            double val = H.values[j];
+            row_sum += val * x[col];
+        }
+        y[i] = row_sum;
+    }
+    std::cout << "C++ Host: Completed one Sparse Mat-Vec iteration.\n";
+}
+
+// End of C++ Core.</code></pre>
+
+                <h3>3. GPU Acceleration with CUDA</h3>
+                <p>
+                    For the large-scale matrix required for $L \ge 16$ sites, the **SpMV operation** is moved to the GPU. The parallel task involves assigning one thread (or a small thread block) to calculate the sum for a single row $i$.
+                </p>
+                <h4 id="cuda-kernel">Conceptual CUDA Kernel for SpMV (Vector Addition Step)</h4>
+                <pre class="code-snippet"><code class="language-cpp">// ed_cuda_kernel.cu: Conceptual CUDA Kernel for Vector Addition
+// Simulating the final vector accumulation step from SpMV in parallel.
+
+// Conceptual function: Performs a simple vector accumulation (z = x + y)
+// This is a common operation in the Lanczos algorithm alongside SpMV.
+__global__ void vector_add_kernel(const double* x, const double* y, double* z, int N) {
+    // Calculate global index
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (idx < N) {
+        // High-speed parallel addition
+        z[idx] = x[idx] + y[idx];
+    }
+}
+
+// Conceptual wrapper for launching the kernel
+void launch_vector_add(const double* d_x, const double* d_y, double* d_z, int N) {
+    int threads_per_block = 256;
+    int num_blocks = (N + threads_per_block - 1) / threads_per_block;
+    
+    // Call the kernel
+    // vector_add_kernel<<<num_blocks, threads_per_block>>>(d_x, d_y, d_z, N);
+    std::cout << "CUDA Device: Launched parallel vector addition kernel.\n";
+}
+// End of CUDA Kernel.</code></pre>
+
+                <h3>4. Data Analysis with Python and MLP</h3>
+                <p>
+                    Once the ground state $|\Psi_0\rangle$ is found, we extract physical quantities like **correlation functions** (e.g., spin-spin correlation $\langle \hat{S}_i \cdot \hat{S}_j \rangle$) as input features. We then use a simple **Multi-Layer Perceptron (MLP)** to classify the system's phase (e.g., distinguishing between a **Mott Insulator** phase and a **Metallic** phase).
+                </p>
+                <h4 id="mlp-analysis">Python MLP for Phase Classification</h4>
+                <pre class="code-snippet"><code class="language-python"># qm_ml_analysis.py: MLP for Hubbard Phase Classification
+import numpy as np
+# Mocking a basic neural network structure without external library dependency
+
+class SimpleMLP:
+    """A minimal MLP to classify quantum phases based on correlation data."""
+    def __init__(self, input_size, hidden_size, output_size):
+        # Initialize mock weights and biases
+        # W1: (input_size, hidden_size), B1: (hidden_size,)
+        self.W1 = np.random.rand(input_size, hidden_size) * 0.1
+        self.B1 = np.zeros(hidden_size)
+        # W2: (hidden_size, output_size), B2: (output_size,)
+        self.W2 = np.random.rand(hidden_size, output_size) * 0.1
+        self.B2 = np.zeros(output_size)
+
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def predict(self, input_data):
+        """Forward pass: Correlation Vector -> Phase Prediction."""
+        # Input Layer -> Hidden Layer (ReLU/Sigmoid activation)
+        hidden_layer_input = np.dot(input_data, self.W1) + self.B1
+        hidden_layer_output = self.sigmoid(hidden_layer_input)
+        
+        # Hidden Layer -> Output Layer (Softmax/Sigmoid for classification)
+        output_layer_input = np.dot(hidden_layer_output, self.W2) + self.B2
+        
+        # Binary classification (0: Metal, 1: Insulator)
+        phase_probability = self.sigmoid(output_layer_input)
+        
+        # Ensure output is a single float for mock prediction
+        return phase_probability[0]
+
+# --- Mock Simulation Data ---
+# L sites -> L/2 correlation function values, representing the distance dependence
+# Let's assume input size is 8 (for a system of L=16 sites)
+input_dim = 8
+mlp = SimpleMLP(input_dim, hidden_size=16, output_size=1)
+
+def run_ml_phase_prediction(interaction_U):
+    """Simulates extracting data and passing it to the MLP."""
+    if interaction_U < 1.0:
+        # Metallic Phase: Correlation drops slowly (mock data)
+        input_data = np.array([0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.02, 0.01])
+    else:
+        # Mott Insulator Phase: Correlation drops rapidly (mock data)
+        input_data = np.array([0.8, 0.05, 0.01, 0.001, 0.0, 0.0, 0.0, 0.0])
+
+    # Normalize input vector
+    input_data = input_data / np.linalg.norm(input_data)
+    
+    # Run prediction
+    prediction = mlp.predict(input_data.reshape(1, -1))
+    
+    # Interpret result
+    if prediction > 0.5:
+        phase = f"Mott Insulator (U={interaction_U:.1f})"
+    else:
+        phase = f"Metal (U={interaction_U:.1f})"
+        
+    print(f"MLP Input (Correlations): {input_data[:4]}...")
+    print(f"MLP Prediction Score: {prediction:.4f}")
+    return f"Predicted Phase: {phase}"
+
+# Example Run:
+# print(run_ml_phase_prediction(interaction_U=0.5))
+# print(run_ml_phase_prediction(interaction_U=5.0))
+
+# End of Python/MLP Analysis.</code></pre>
+            </div>
+        </main>
+    </div>
+
+    <!-- The Footer remains outside the container to span full width -->
+    <footer>
+        <p>© 2025 Quantum Matter HPC Technical Document.</p>
+        <!-- Theme Toggle Button -->
+        <button id="theme-toggle" class="theme-toggle-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <span id="theme-text">Dark Mode</span>
+        </button>
+    </footer>
+
+    <!-- JavaScript for Theme Toggle Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const toggleButton = document.getElementById('theme-toggle');
+
+            // --- Theme Toggle Logic ---
+            const initialTheme = localStorage.getItem('theme') || 'light';
+            const isDarkMode = initialTheme === 'dark';
+
+            const updateThemeUI = (isDark) => {
+                const svgSun = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+                const svgMoon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+                if (isDark) {
+                    body.classList.add('dark-theme');
+                    toggleButton.innerHTML = `${svgMoon}<span>Light Mode</span>`;
+                } else {
+                    body.classList.remove('dark-theme');
+                    toggleButton.innerHTML = `${svgSun}<span>Dark Mode</span>`;
+                }
+            };
+
+            updateThemeUI(isDarkMode);
+
+            toggleButton.addEventListener('click', () => {
+                const isDark = body.classList.toggle('dark-theme');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeUI(isDark);
+            });
+        });
+    </script>
+</body>
+</html>
